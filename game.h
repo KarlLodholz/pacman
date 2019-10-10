@@ -15,6 +15,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <ctime>
+#include <vector>
 
 void clr() {
     //outputs space the size of the terminal, in a sense clearing the screen
@@ -28,7 +29,8 @@ class Game {
         bool update; //set to true to reprint screen
         bool playing;
         Map *m;
-        Entity *e;
+        Player *p;
+        std::vector<Ghost> g;
         Game();
         ~Game();
         void print();
@@ -36,7 +38,7 @@ class Game {
         void iterate();
     private:
         int time;
-        int timeinc;
+        int time_inc;
 
         std::chrono::high_resolution_clock::time_point t1;
         std::chrono::high_resolution_clock::time_point t2;
@@ -44,8 +46,8 @@ class Game {
         
         //1000(milliQuo/milliNum) = fps
         //1000/(50/3) = 60fps
-        int milliQuo = 50; 
-        int milliNum = 3;
+        int milli_quo = 50; 
+        int milli_num = 3;
 };
 
 Game::Game() {
@@ -53,17 +55,16 @@ Game::Game() {
     playing = true;
     time = 0;
     t1 = std::chrono::high_resolution_clock::now();
-    // e = new Entity[];
-    // e[0] = new Player p();
-    // e[1] = new Ghost();
-    // e[2] = new Ghost();
-    // e[3] = new Ghost(); 
-    // e[4] = new Ghost();
+    p = new Player();
+    int width = 10;
+    Map m();
+    g.push_back(Chaser(width,*p));
+    //g.push_back(Ghost(&Ghost::Flanker_AI(),p));
+
 }
 
 Game::~Game() {
-    delete[] e;
-    delete e;
+
 }
 
 void Game::print() {
@@ -79,12 +80,12 @@ void Game::input(char c) {
 void Game::iterate() {
     t2 = std::chrono::high_resolution_clock::now();
     ts = std::chrono::duration_cast<std::chrono::duration<int,std::milli>>(t2 - t1);
-    if(time != (int)ts.count()*milliNum/milliQuo) { 
-        timeinc = (int)ts.count()*milliNum/milliQuo - time;
-        time = (int)ts.count()*milliNum/milliQuo;
+    if(time != (int)ts.count()*milli_num/milli_quo) { 
+        time_inc = (int)ts.count()*milli_num/milli_quo - time;
+        time = (int)ts.count()*milli_num/milli_quo;
     }
 
-    if(timeinc > 0) {
+    if(time_inc > 0) {
         //move entities
     }
     return;

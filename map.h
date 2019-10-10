@@ -3,6 +3,8 @@
 
 class Map {
 public:
+    int width, height;
+    
 private:
 };
 
