@@ -1,6 +1,6 @@
 #ifndef GAME_H
 #define GAME_H
-#include "entity.h"
+//#include "entity.h"
 #include "map.h"
 #include <chrono>
 #include <stdio.h>
@@ -24,18 +24,21 @@ void clr() {
     return;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
 class Game {
     public:
         bool update; //set to true to reprint screen
         bool playing;
-        Map *m;
-        Player *p;
-        std::vector<Ghost> g;
-        Game();
-        ~Game();
+        /////////////////Map *ma;
+        Map ma = Map("map.txt");
+        //Player p*;
+        //std::vector<Ghost> g;
         void print();
         void input(char c);
         void iterate();
+        Game();
+        ~Game();
     private:
         int time;
         int time_inc;
@@ -50,32 +53,42 @@ class Game {
         int milli_num = 3;
 };
 
+///////////////////////////////////////////////////////////////////////////////
+
 Game::Game() {
     update = false;
     playing = true;
     time = 0;
     t1 = std::chrono::high_resolution_clock::now();
-    p = new Player();
-    int width = 10;
-    Map m();
-    g.push_back(Chaser(width,*p));
+    //p = new Player();
+    //////////////////ma = new Map("map.txt");
+    
+    //g.push_back(Chaser(width,*p));
     //g.push_back(Ghost(&Ghost::Flanker_AI(),p));
 
 }
+
+///////////////////////////////////////////////////////////////////////////////
 
 Game::~Game() {
 
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
 void Game::print() {
     clr();
     update = false;
-    std::cout<<time<<std::endl;
+    ma.print();
 }
+
+///////////////////////////////////////////////////////////////////////////////
 
 void Game::input(char c) {
 
 }
+
+///////////////////////////////////////////////////////////////////////////////
 
 void Game::iterate() {
     t2 = std::chrono::high_resolution_clock::now();
@@ -90,6 +103,8 @@ void Game::iterate() {
     }
     return;
 }
+
+///////////////////////////////////////////////////////////////////////////////
 
 int _kbhit() {
     static const int STDIN = 0;
