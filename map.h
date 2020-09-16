@@ -3,6 +3,8 @@
 #include <fstream>
 #include <iostream>
 #include <vector>
+#include <codecvt>
+#include <locale>
 
 class Map {
 public:
@@ -59,16 +61,17 @@ Map::Map(const std::string &file_name) {
 ///////////////////////////////////////////////////////////////////////////////
 
 void Map::print() {
+    using Converter = std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>, wchar_t>;
+
+    std::string str;
     for(int y = 0; y < height; y++) {
-        for(int x = 0; x < width; x++)
-            std::wcout<<m[y][x];
-        std::wcout<<'\n';
+        str = "";
+        for(int x = 0; x < width; x++) {
+            str += Converter{}.to_bytes(m[y][x]);
+        }
+        std::cout<< str <<'\n';
     }
-    std::wcout<<'\n';
-    std::wcout<<'\n'<<int(wall);
-
-
-    std::wcout<<std::endl;
+    std::cout<<std::endl;
     return;
 }
 
