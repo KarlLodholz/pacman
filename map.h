@@ -73,39 +73,42 @@ Map::Map(const std::string &file_name) {
         for(int x = 0; x<width; x++) {
             if(m[y][x] == WALL) {
                 //directions of walls.  True if wall that direction
-                bool n = y-1 != -1 ? m[y-1][x]==WALL: false;
-                bool s = y+1 != height ? m[y+1][x]==WALL : false;
-                bool w = x-1 != -1 ? m[y][x-1]==WALL : false;
-                bool e = x+1 != width ? m[y][x+1]==WALL : false; 
-                bool ne = (y-1 != -1 && x+1 != width) ? m[y-1][x+1]==WALL : false;
-                bool nw = (y-1 != -1 && x-1 != -1) ? m[y-1][x-1]==WALL : false;
-                bool se = (y+1 != height && x+1 != width) ? m[y+1][x+1]==WALL : false;
-                bool sw = (y+1 != height && x-1 != -1) ? m[y+1][x-1]==WALL : false;
+                bool n = y-1 != -1;
+                bool s = y+1 != height;
+                bool w = x-1 != -1;
+                bool e = x+1 != width;
+
+                bool n_b = n ? m[y-1][x]==WALL: false;
+                bool s_b = s ? m[y+1][x]==WALL : false;
+                bool w_b = w ? m[y][x-1]==WALL : false;
+                bool e_b = e ? m[y][x+1]==WALL : false;
+
+                bool ne = (n && e) ? m[y-1][x+1]==WALL : false;
+                bool nw = (n && w) ? m[y-1][x-1]==WALL : false;
+                bool se = (s && e) ? m[y+1][x+1]==WALL : false;
+                bool sw = (s && w) ? m[y+1][x-1]==WALL : false;
                 
                 short w_type = SPACE; //default value is fill
                 //short wN_type = SPACE;
-                if (n && s && e && w && ne && nw && se && sw);// w_type = WALL;
-                //else if ()
-                else if (!ne && n && e) w_type = 9562; //╚
-                else if (!nw && n && w) w_type = 9565; //╝
-                else if (!se && s && e) w_type = 9556; //╔
-                else if (!sw && s && w) w_type = 9559; //
-
-                else if (n && s) w_type = 9553; //║
-                else if (e && w) w_type = 9552; //═
-
-                else if (n && e) w_type = 9562; //╚
-                else if (n && w) w_type = 9565; //╝
-                else if (s && e) w_type = 9556; //╔
-                else if (s && w) w_type = 9559; //╗
-
-
-                //else if (n && e) w_type = 9562; //╚
+                if (ne && nw && se && sw);// w_type = WALL;
+                else if (!w && e_b && !(!ne || !se));
+                else if (!e && w_b && !(!nw || !sw));
                 
+                else if (!ne && n_b && e_b) w_type = 9562; //╚
+                else if (!nw && n_b && w_b) w_type = 9565; //╝
+                else if (!se && s_b && e_b) w_type = 9556; //╔
+                else if (!sw && s_b && w_b) w_type = 9559; //╗
 
-                
+                else if (n_b && s_b) w_type = 9553; //║
+                else if (e_b && w_b) w_type = 9552; //═
+
+                else if (n_b && e_b) w_type = 9562; //╚
+                else if (n_b && w_b) w_type = 9565; //╝
+                else if (s_b && e_b) w_type = 9556; //╔
+                else if (s_b && w_b) w_type = 9559; //╗
+                                
                 m_wall[y].push_back(w_type);
-                m_wall[y].push_back((e && w_type != SPACE && w_type != 9553) ? 9552 : SPACE); 
+                m_wall[y].push_back((e_b && w_type != SPACE && w_type != 9553 && w_type != 9565 && w_type != 9559 ) ? 9552 : SPACE); 
             }
             else {
                 m_wall[y].push_back(SPACE);
@@ -113,14 +116,14 @@ Map::Map(const std::string &file_name) {
             }
         }
     }
-    std::cout<<std::endl;
-    for(int y = 0; y<m_wall.size(); y++) {
-        for(int x = 0; x<m_wall[y].size(); x++) {
-            std::cout<<Converter{}.to_bytes(m_wall[y][x]);
-        }
-        std::cout<<'\n';
-    }
-    std::cout<<std::flush;
+    // std::cout<<std::endl;
+    // for(int y = 0; y<m_wall.size(); y++) {
+    //     for(int x = 0; x<m_wall[y].size(); x++) {
+    //         std::cout<<Converter{}.to_bytes(m_wall[y][x]);
+    //     }
+    //     std::cout<<'\n';
+    // }
+    // std::cout<<std::flush;
 
     //for(int i=0;i<idx.size();i++) std::cout<<idx[i]<<std::endl;
 
@@ -130,19 +133,16 @@ Map::Map(const std::string &file_name) {
 
 void Map::print() {
     using Converter = std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>, wchar_t>;
-    // std::cout<< this -> width<<std::endl;
-    // std::cout<< this -> height<<std::endl;
-    // std::cout<< this -> m[30][35]<<std::endl;
     
     //Attempt 1
-    std::cout<<"Attempt 1:\n";
-    for(int y = 0; y < this->height; y++) {
-        std::cout<<Converter{}.to_bytes(m[y][0] == WALL ? WALL : SPACE);
-        for(int x = 0; x < this->width; x++) {
-            std::cout<< Converter{}.to_bytes(m[y][x])<< Converter{}.to_bytes(m[y][x] == WALL && m[y][x+(x+1<width?1:0)] == WALL ? WALL : SPACE);
-        }
-        std::cout<<'\n';//'\n';
-    }
+    // std::cout<<"Attempt 1:\n";
+    // for(int y = 0; y < this->height; y++) {
+    //     std::cout<<Converter{}.to_bytes(m[y][0] == WALL ? WALL : SPACE);
+    //     for(int x = 0; x < this->width; x++) {
+    //         std::cout<< Converter{}.to_bytes(m[y][x])<< Converter{}.to_bytes(m[y][x] == WALL && m[y][x+(x+1<width?1:0)] == WALL ? WALL : SPACE);
+    //     }
+    //     std::cout<<'\n';//'\n';
+    // }
     
 
     //Attempt 2
@@ -151,7 +151,7 @@ void Map::print() {
     for(int y = 0; y < this->height; y++) {
         //std::cout<<Converter{}.to_bytes(m[y][0] == WALL ? 9553 : SPACE);
         for(int x = 0; x < this->width; x++) {
-            //std::cout<< Converter{}.to_bytes(m[y][x] == WALL ? m_wall[y][x+x] : m[y][x])<< Converter{}.to_bytes(m[y][x] == WALL ? m_wall[y][x+x+1] : m[y][x]); //WALL:SPACE
+            std::cout<< Converter{}.to_bytes(m[y][x] == WALL ? m_wall[y][x+x] : m[y][x])<< Converter{}.to_bytes(m[y][x] == WALL ? m_wall[y][x+x+1] : SPACE); //WALL:SPACE
         }
         std::cout<<'\n';//'\n';
     }
