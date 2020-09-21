@@ -28,7 +28,14 @@ private:
 
     //wchar_t for printing to terminal
     const short SPACE     = ' ';
-    const short WALL      = 9617;//'░';
+    const short WALL      = 9617;// ░
+    const short SWE_WALL  = 9552;// ═
+    const short SE_WALL   = 9556;// ╔
+    const short NW_WALL   = 9565;// ╝
+    const short SW_WALL   = 9559;// ╗
+    const short NE_WALL   = 9562;// ╚
+    const short NS_WALL   = 9553;// ║
+    const short WE_WALL   = 9552;// ═
     const short PAC_WALL  = '-';
     const short DOT       = 8226;//'•';
     const short BIG_DOT   = 'o';
@@ -60,13 +67,6 @@ Map::Map(const std::string &file_name) {
     this -> width = temp.size() * 2;
     this -> height = j;
 
-
-    //9556: ╔
-    //9565: ╝
-    //9559: ╗
-    //9562: ╚
-    //9553: ║
-    //9552: ═
     using Converter = std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>, wchar_t>;
     for(int y = 0; y<height; y++) {
         m_wall.push_back(std::vector<short>());
@@ -93,23 +93,29 @@ Map::Map(const std::string &file_name) {
                 if (ne && nw && se && sw);// w_type = WALL;
                 else if (!w && e_b && !(!ne || !se));
                 else if (!e && w_b && !(!nw || !sw));
-                
-                else if (!ne && n_b && e_b) w_type = 9562; //╚
-                else if (!nw && n_b && w_b) w_type = 9565; //╝
-                else if (!se && s_b && e_b) w_type = 9556; //╔
-                else if (!sw && s_b && w_b) w_type = 9559; //╗
 
-                else if (n_b && s_b) w_type = 9553; //║
-                else if (e_b && w_b) w_type = 9552; //═
+                else if (!n_b && e_b && s_b && w_b && (!se || !sw)) { w_type = SWE_WALL; m_wall[y][x+x-1] = WE_WALL;}
 
-                else if (n_b && e_b) w_type = 9562; //╚
-                else if (n_b && w_b) w_type = 9565; //╝
-                else if (s_b && e_b) w_type = 9556; //╔
-                else if (s_b && w_b) w_type = 9559; //╗
+                else if (!ne && n_b && e_b) w_type = NE_WALL; //╚
+                else if (!nw && n_b && w_b) w_type = NW_WALL; //╝
+                else if (!se && s_b && e_b) w_type = SE_WALL; //╔
+                else if (!sw && s_b && w_b) w_type = SW_WALL; //╗
+
+                else if (n_b && s_b) w_type = NS_WALL; //║
+                else if (e_b && w_b) w_type = WE_WALL; //═
+
+                else if (n_b && e_b) w_type = NE_WALL; //╚
+                else if (n_b && w_b) w_type = NW_WALL; //╝
+                else if (s_b && e_b) w_type = SE_WALL; //╔
+                else if (s_b && w_b) w_type = SW_WALL; //╗
                                 
                 m_wall[y].push_back(w_type);
-                m_wall[y].push_back((e_b && w_type != SPACE && w_type != 9553 && w_type != 9565 && w_type != 9559 ) ? 9552 : SPACE); 
+                m_wall[y].push_back((e_b && w_type != SPACE && w_type != NS_WALL && w_type != NW_WALL && w_type != SW_WALL) ? WE_WALL : SPACE); 
             }
+            // else if (m[y][x] == PAC_WALL) {
+            //     m_wall[y].push_back(PAC_WALL);
+            //     m_wall[y].push_back(m[y][x+1] == WALL ? SE_WALL : PAC_WALL);
+            // }
             else {
                 m_wall[y].push_back(SPACE);
                 m_wall[y].push_back(SPACE);
@@ -134,7 +140,7 @@ Map::Map(const std::string &file_name) {
 void Map::print() {
     using Converter = std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>, wchar_t>;
     
-    //Attempt 1
+    // // Attempt 1
     // std::cout<<"Attempt 1:\n";
     // for(int y = 0; y < this->height; y++) {
     //     std::cout<<Converter{}.to_bytes(m[y][0] == WALL ? WALL : SPACE);
@@ -147,7 +153,7 @@ void Map::print() {
 
     //Attempt 2
 
-    std::cout<< "\n\nAttempt 2:\n";
+    //std::cout<< "\n\nAttempt 2:\n";
     for(int y = 0; y < this->height; y++) {
         //std::cout<<Converter{}.to_bytes(m[y][0] == WALL ? 9553 : SPACE);
         for(int x = 0; x < this->width; x++) {
