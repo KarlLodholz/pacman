@@ -10,7 +10,7 @@
 #include <sys/ioctl.h>
 #include <sys/select.h>
 #include <termios.h>
-#include <stropts.h>
+//#include <stropts.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <time.h>
