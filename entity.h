@@ -1,59 +1,115 @@
 #ifndef ENTITY_H
 #define ENTITY_H
+#include "map.h"
+#include <vector>
 
 class Entity {
 public:
     int move_delay; //number of frames before movings
-    int pos;
-    int init_pos;
-    int dir; // 0 = up, 1 = left, 2 = down, 3 = right
-private:
+    short init_pos;
+    Map * m;
+protected:
+    void move(const short &dir);
+    short dir; // 0 = up, 1 = down, 2 = left, 3 = right
+    short x_pos;
+    short y_pos;
+
+    //value for character underneath the entity
+    short temp_underneath;
 };
+
+void Entity::move(const short &dir) {
+    m->m[y_pos][x_pos] = m->SPACE;
+    y_pos = (y_pos+((dir/2-1)*-1)*(dir*2-1));
+    x_pos = x_pos+(dir/2)*((dir%2)*2-1);
+    y_pos = y_pos < 0 ? m->height-1 : y_pos == m->height ? 0 : y_pos;
+    x_pos = x_pos < 0 ? m->width-1 : x_pos == m->width ? 0 : x_pos;
+    m->m[y_pos][x_pos] = m->PAC_FULL;
+}
 
 class Player : public Entity {
 public:
+    bool movable(const int &dir);
+    void move();
+    Player(Map &m, const short &x_pos, const short &y_pos);
 private:
+    short dir_q; // -1 = no dir queue, 0 = up, 1 = down, 2 = left, 3 = right
 };
 
-class Ghost : public Entity {
-public:
-    int target;
-    //void (Ghost::*ai)(); //pointer to the ai func determined at init
-    //Ghost(void (Ghost::*func)(), Player player, const int &init_pos);
-    //Ghost();
-private:
-    int width;
-};
+Player::Player(Map &m, const short &x_pos, const short &y_pos) {
+    this -> m = &m;
+    this -> x_pos = x_pos;
+    this -> y_pos = y_pos;
+    dir_q = -1;
+    dir = 2;
+}
+
+
+//checks if player can move that direction
+bool Player::movable(const int &dir) {
+    return 1;
+}
+
+//called every frame
+void Player::move() {
+    if(dir_q != -1 && movable(dir_q)) {
+        //set dir and move
+
+    }
+    else if(movable(dir)) {
+        //move direction previously going if possible
+        m->m[y_pos][x_pos] = m->SPACE;
+        y_pos = (y_pos+((dir_q/2-1)*-1)*(dir_q*2-1));
+        x_pos = x_pos+(dir_q/2)*((dir_q%2)*2-1);
+        y_pos = y_pos < 0 ? m->height-1 : y_pos == m->height ? 0 : y_pos;
+        x_pos = x_pos < 0 ? m->width-1 : x_pos == m->width ? 0 : x_pos;
+        m->m[y_pos][x_pos] = m->PAC_FULL;
+    }
+    // else {
+    //     //dont move
+    // }
+    return;
+}
+
+// class Ghost : public Entity {
+// public:
+//     int target;
+//     //void (Ghost::*ai)(); //pointer to the ai func determined at init
+//     //Ghost(void (Ghost::*func)(), Player player, const int &init_pos);
+//     //Ghost();
+// private:
+//     int width;
+// };
 
 // Ghost::Ghost(void (Ghost::*func)(), Player player) {
 //     this->ai = func;
 //     this->init_pos = init_pos;
 // }
 
-class Chaser : public Ghost {
-    public:
-        Chaser(const int &width, Player p) {
-            player_pos = &p.pos;
+// class Chaser : public Ghost {
+//     public:
+//         Chaser(const int &width, Player p) {
+//             player_pos = &p.pos;
 
-        };
-        void ai() {
-            target = *player_pos;
-        };
-    private:
-        int *player_pos;
-};
+//         };
+//         void ai() {
+//             target = *player_pos;
+//         };
+//     private:
+//         int *player_pos;
+// };
 
-class Flanker : public Ghost {
-    public:
-        Flanker(const int &width, Player &p, const int &distance) {
-            flank_distance_ahead = distance;
-        };
-        void ai() {
-            return;
-        }
-    private:
-        int flank_distance_ahead;
+// class Flanker : public Ghost {
+//     public:
+//         Flanker(const int &width, Player &p, const int &distance) {
+//             flank_distance_ahead = distance;
+//         };
+//         void ai() {
+//             return;
+//         }
+//     private:
+//         int flank_distance_ahead;
 
-};
+// };
 
 #endif

@@ -13,23 +13,9 @@ public:
     void print();
     Map(const std::string &file_name);
 
-private:
-    //printing map vector
-    std::vector< std::vector<short> > m_wall;
-
-    //char for map encoding
-    const char idx_SPACE = '0';
-    const char idx_WALL = '1';
-    const char idx_PAC_WALL = '2'; //wall only affects player
-    const char idx_DOT = '3';
-    const char idx_BIG_DOT = '4';
-    const char idx_GHOST_SPAWN = '5';
-    const char idx_PLAYER_SPAWN = '6';
-
-    //wchar_t for printing to terminal
     const short SPACE     = ' ';
     const short WALL      = 9617;// ░
-    const short SWE_WALL  = 9552;// ═
+    const short SWE_WALL  = 9574;// ╦
     const short SE_WALL   = 9556;// ╔
     const short NW_WALL   = 9565;// ╝
     const short SW_WALL   = 9559;// ╗
@@ -45,6 +31,20 @@ private:
     const short PAC_DOWN  = 4098;//'ဂ';
     const short PAC_LEFT  = 4161;//'၁';
     const short PAC_RIGHT = 4100;//'င';
+
+private:
+    //printing map vector
+    std::vector< std::vector<short> > m_wall;
+
+    //char for map encoding
+    const char idx_SPACE = '0';
+    const char idx_WALL = '1';
+    const char idx_PAC_WALL = '2'; //wall only affects player
+    const char idx_DOT = '3';
+    const char idx_BIG_DOT = '4';
+    const char idx_GHOST_SPAWN = '5';
+    const char idx_PLAYER_SPAWN = '6';
+
     const std::vector<short> idx = {  SPACE,WALL,PAC_WALL,DOT,BIG_DOT,GHOST,
                                     PAC_FULL,PAC_UP,PAC_DOWN,PAC_LEFT,PAC_RIGHT};
 };
@@ -112,10 +112,7 @@ Map::Map(const std::string &file_name) {
                 m_wall[y].push_back(w_type);
                 m_wall[y].push_back((e_b && w_type != SPACE && w_type != NS_WALL && w_type != NW_WALL && w_type != SW_WALL) ? WE_WALL : SPACE); 
             }
-            // else if (m[y][x] == PAC_WALL) {
-            //     m_wall[y].push_back(PAC_WALL);
-            //     m_wall[y].push_back(m[y][x+1] == WALL ? SE_WALL : PAC_WALL);
-            // }
+
             else {
                 m_wall[y].push_back(SPACE);
                 m_wall[y].push_back(SPACE);
@@ -139,25 +136,11 @@ Map::Map(const std::string &file_name) {
 
 void Map::print() {
     using Converter = std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>, wchar_t>;
-    
-    // // Attempt 1
-    // std::cout<<"Attempt 1:\n";
-    // for(int y = 0; y < this->height; y++) {
-    //     std::cout<<Converter{}.to_bytes(m[y][0] == WALL ? WALL : SPACE);
-    //     for(int x = 0; x < this->width; x++) {
-    //         std::cout<< Converter{}.to_bytes(m[y][x])<< Converter{}.to_bytes(m[y][x] == WALL && m[y][x+(x+1<width?1:0)] == WALL ? WALL : SPACE);
-    //     }
-    //     std::cout<<'\n';//'\n';
-    // }
-    
 
-    //Attempt 2
-
-    //std::cout<< "\n\nAttempt 2:\n";
     for(int y = 0; y < this->height; y++) {
-        //std::cout<<Converter{}.to_bytes(m[y][0] == WALL ? 9553 : SPACE);
         for(int x = 0; x < this->width; x++) {
-            std::cout<< Converter{}.to_bytes(m[y][x] == WALL ? m_wall[y][x+x] : m[y][x])<< Converter{}.to_bytes(m[y][x] == WALL ? m_wall[y][x+x+1] : SPACE); //WALL:SPACE
+            std::cout<< Converter{}.to_bytes(m[y][x] == WALL ? m_wall[y][x+x] : m[y][x])
+            << Converter{}.to_bytes(m[y][x] == WALL ? m_wall[y][x+x+1] : SPACE);
         }
         std::cout<<'\n';//'\n';
     }

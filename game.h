@@ -1,7 +1,7 @@
 #ifndef GAME_H
 #define GAME_H
-//#include "entity.h"
-#include "map.h"
+#include "entity.h"
+//#include "map.h"
 #include <chrono>
 #include <stdio.h>
 #include <iostream>
