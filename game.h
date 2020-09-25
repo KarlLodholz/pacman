@@ -30,18 +30,20 @@ class Game {
     public:
         bool update; //set to true to reprint screen
         bool playing;
-        /////////////////Map *ma;
-        Map ma = Map("map.txt");
-        //Player p*;
+        Map *m;
+        Player *p;
         //std::vector<Ghost> g;
         void print();
         void input(char c);
         void iterate();
-        Game();
+        void pause();
+        Game(const std::string &map_file);
         ~Game();
     private:
         int time;
         int time_inc;
+
+        const char CMD_PAUSE = 'p'; 
 
         std::chrono::high_resolution_clock::time_point t1;
         std::chrono::high_resolution_clock::time_point t2;
@@ -55,14 +57,14 @@ class Game {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-Game::Game() {
+Game::Game(const std::string &map_file) {
     update = false;
     playing = true;
     time = 0;
     t1 = std::chrono::high_resolution_clock::now();
-    //p = new Player();
-    //////////////////ma = new Map("map.txt");
-    
+    m = new Map(map_file);
+    p = new Player(m, m->player_start%m->width, m->player_start/ m->width);
+
     //g.push_back(Chaser(width,*p));
     //g.push_back(Ghost(&Ghost::Flanker_AI(),p));
 
@@ -79,13 +81,14 @@ Game::~Game() {
 void Game::print() {
     clr();
     update = false;
-    ma.print();
+    m->print();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
 void Game::input(char c) {
-
+    if(c == CMD_PAUSE) pause();
+    else p->input(c);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -100,7 +103,16 @@ void Game::iterate() {
 
     if(time_inc > 0) {
         //move entities
+        p->move();
+        time_inc = 0;
+        update = true;
     }
+    return;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+void Game::pause() {
     return;
 }
 

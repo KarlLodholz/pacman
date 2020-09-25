@@ -2,7 +2,7 @@
 
 int main(int argc, char** argv) {
     std::string input;
-    Game g = Game();
+    Game g = Game("map.txt");
 
     do {
         if(g.update) {

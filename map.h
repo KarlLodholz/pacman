@@ -12,6 +12,7 @@ public:
     std::vector< std::vector<short> > m;
     void print();
     Map(const std::string &file_name);
+    short player_start;
 
     const short SPACE     = ' ';
     const short WALL      = 9617;// ░
@@ -60,14 +61,15 @@ Map::Map(const std::string &file_name) {
         this -> m.push_back(std::vector<short>());
         for(int i=0; i<temp.size(); i++)
             this -> m[j].push_back(idx[(temp.at(i)-48)]);
-        for(int i=temp.size()-1; i>=0; i--)
+        for(int i=temp.size()-1; i>=0; i--) {
             this -> m[j].push_back(idx[(temp.at(i)-48)]);
+            if(m[j][m[j].size()-1]==idx_PLAYER_SPAWN) player_start = (m[j].size()-1);
+        }
         j++;
     }
     this -> width = temp.size() * 2;
     this -> height = j;
 
-    using Converter = std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>, wchar_t>;
     for(int y = 0; y<height; y++) {
         m_wall.push_back(std::vector<short>());
         for(int x = 0; x<width; x++) {
