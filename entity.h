@@ -3,22 +3,27 @@
 #include "map.h"
 #include <vector>
 
+///////////////////////////////////////////////////////////////////////////////
+
 class Entity {
 public:
     int move_delay; //number of frames before movings
     short init_pos;
     Map * m;
+    void move() {move_h(dir);};
 protected:
-    void move(const short &dir);
     short dir; // 0 = up, 1 = down, 2 = left, 3 = right
     short x_pos;
     short y_pos;
 
     //value for character underneath the entity
     short temp_underneath;
+    //helper move func
+    void move_h(const short &dir);
 };
 
-void Entity::move(const short &dir) {
+
+void Entity::move_h(const short &dir) {
     m->m[y_pos][x_pos] = m->SPACE;
     y_pos = (y_pos+((dir/2-1)*-1)*(dir*2-1));
     x_pos = x_pos+(dir/2)*((dir%2)*2-1);
@@ -27,21 +32,65 @@ void Entity::move(const short &dir) {
     m->m[y_pos][x_pos] = m->PAC_FULL;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
 class Player : public Entity {
 public:
-    bool movable(const int &dir);
+    void input(const char &c);
     void move();
-    Player(Map &m, const short &x_pos, const short &y_pos);
+    Player(Map *m, const short &x_pos, const short &y_pos);
 private:
+    static const char CMD_UP = 'w';
+    static const char CMD_DOWN = 's';
+    static const char CMD_LEFT = 'a';
+    static const char CMD_RIGHT = 'd';
+    bool movable(const int &dir);
     short dir_q; // -1 = no dir queue, 0 = up, 1 = down, 2 = left, 3 = right
 };
 
-Player::Player(Map &m, const short &x_pos, const short &y_pos) {
-    this -> m = &m;
+
+Player::Player(Map *m, const short &x_pos, const short &y_pos) {
+    this -> m = m;
     this -> x_pos = x_pos;
     this -> y_pos = y_pos;
     dir_q = -1;
     dir = 2;
+}
+
+
+void Player::input(const char &c) {
+    switch(c) {
+        case CMD_UP:
+            if(dir > 1) dir_q = 0;
+            break;
+        case CMD_DOWN:
+            if(dir > 1) dir_q = 1;
+            break;
+        case CMD_LEFT:
+            if(dir < 2) dir_q = 2;
+            break;
+        case CMD_RIGHT:
+            if(dir < 2) dir_q = 3;
+            break; 
+    }
+    return;
+}
+
+
+//called every frame
+void Player::move() {
+    if(dir_q != -1 && movable(dir_q)) {  //set dir and move
+        dir = dir_q;
+        dir_q = -1;
+        move_h(dir);
+    }
+    else if(movable(dir)) {  //move direction previously going if possible
+        move_h(dir);
+    }
+    // else {
+    //     //dont move
+    // }
+    return;
 }
 
 
@@ -50,26 +99,7 @@ bool Player::movable(const int &dir) {
     return 1;
 }
 
-//called every frame
-void Player::move() {
-    if(dir_q != -1 && movable(dir_q)) {
-        //set dir and move
-
-    }
-    else if(movable(dir)) {
-        //move direction previously going if possible
-        m->m[y_pos][x_pos] = m->SPACE;
-        y_pos = (y_pos+((dir_q/2-1)*-1)*(dir_q*2-1));
-        x_pos = x_pos+(dir_q/2)*((dir_q%2)*2-1);
-        y_pos = y_pos < 0 ? m->height-1 : y_pos == m->height ? 0 : y_pos;
-        x_pos = x_pos < 0 ? m->width-1 : x_pos == m->width ? 0 : x_pos;
-        m->m[y_pos][x_pos] = m->PAC_FULL;
-    }
-    // else {
-    //     //dont move
-    // }
-    return;
-}
+///////////////////////////////////////////////////////////////////////////////
 
 // class Ghost : public Entity {
 // public:
@@ -111,5 +141,7 @@ void Player::move() {
 //         int flank_distance_ahead;
 
 // };
+
+///////////////////////////////////////////////////////////////////////////////
 
 #endif
