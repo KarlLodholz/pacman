@@ -7,7 +7,7 @@
 
 class Entity {
 public:
-    short move_delay; //number of frames before movings
+    short move_delay; //number of frames before movings; must be > 0
     short frame_counter;
     short init_pos;
     Map * m;
@@ -27,7 +27,7 @@ protected:
 bool Entity::move_h() {
     bool moved = false;
     frame_counter++;
-    if(!(frame_counter % move_delay)) {
+    if(frame_counter % move_delay == 0) {
         frame_counter = 0;
         m->m[y_pos][x_pos] = temp_underneath;
         y_pos = (y_pos+((dir/2-1)*-1)*(dir*2-1));
@@ -38,12 +38,13 @@ bool Entity::move_h() {
         m->m[y_pos][x_pos] = m->PAC_FULL;
         moved = true;
     }
-    else if((!(frame_counter%(move_delay/2))) && dir>1) {
+    else if(frame_counter % (move_delay/2) == 0 && dir>1) {
         m->m[y_pos][x_pos] = temp_underneath;
+        x_pos = x_pos+((dir%2)*2-1);
         x_pos = x_pos < 0 ? m->width-1 : x_pos == m->width ? 0 : x_pos;
         temp_underneath = m->m[y_pos][x_pos];
         m->m[y_pos][x_pos] = m->PAC_FULL;
-        std::cout<<"HERE"<<std::endl;
+        //std::cout<<"HERE"<<std::endl;
         moved = true;
     }
     return moved;
@@ -72,7 +73,7 @@ Player::Player(Map *m, const short &x_pos, const short &y_pos) {
     this -> y_pos = y_pos;
     dir_q = -1;
     dir = 2;
-    move_delay = 10;
+    move_delay = 6;
     frame_counter = 0;
 }
 

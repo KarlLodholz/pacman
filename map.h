@@ -126,9 +126,8 @@ Map::Map(const std::string &file_name) {
 
 void Map::print() {
     using Converter = std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>, wchar_t>;
-
     for(int y = 0; y < height; y++) {
-        for(int x = 0; x < this->width; x++) {
+        for(int x = 0; x < width; x++) {
             std::cout<< Converter{}.to_bytes(m[y][x]);
         }
         std::cout<<'\n';//'\n';

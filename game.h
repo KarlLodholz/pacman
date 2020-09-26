@@ -52,7 +52,7 @@ class Game {
         //1000(milliQuo/milliNum) = fps
         //1000/(50/3) = 60fps
         short milli_quo = 50; 
-        short milli_num = 1;
+        short milli_num = 2;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
