@@ -7,10 +7,11 @@
 
 class Entity {
 public:
-    int move_delay; //number of frames before movings
+    short move_delay; //number of frames before movings
+    short frame_counter;
     short init_pos;
     Map * m;
-    void move() {move_h(dir);};
+    bool move() {return move_h();};
 protected:
     short dir; // 0 = up, 1 = down, 2 = left, 3 = right
     short x_pos;
@@ -19,17 +20,33 @@ protected:
     //value for character underneath the entity
     short temp_underneath;
     //helper move func
-    void move_h(const short &dir);
+    bool move_h();
 };
 
 
-void Entity::move_h(const short &dir) {
-    m->m[y_pos][x_pos] = m->SPACE;
-    y_pos = (y_pos+((dir/2-1)*-1)*(dir*2-1));
-    x_pos = x_pos+(dir/2)*((dir%2)*2-1);
-    y_pos = y_pos < 0 ? m->height-1 : y_pos == m->height ? 0 : y_pos;
-    x_pos = x_pos < 0 ? m->width-1 : x_pos == m->width ? 0 : x_pos;
-    m->m[y_pos][x_pos] = m->PAC_FULL;
+bool Entity::move_h() {
+    bool moved = false;
+    frame_counter++;
+    if(!(frame_counter % move_delay)) {
+        frame_counter = 0;
+        m->m[y_pos][x_pos] = temp_underneath;
+        y_pos = (y_pos+((dir/2-1)*-1)*(dir*2-1));
+        x_pos = x_pos+(dir/2)*((dir%2)*2-1);
+        y_pos = y_pos < 0 ? m->height-1 : y_pos == m->height ? 0 : y_pos;
+        x_pos = x_pos < 0 ? m->width-1 : x_pos == m->width ? 0 : x_pos;
+        temp_underneath = m->m[y_pos][x_pos];
+        m->m[y_pos][x_pos] = m->PAC_FULL;
+        moved = true;
+    }
+    else if((!(frame_counter%(move_delay/2))) && dir>1) {
+        m->m[y_pos][x_pos] = temp_underneath;
+        x_pos = x_pos < 0 ? m->width-1 : x_pos == m->width ? 0 : x_pos;
+        temp_underneath = m->m[y_pos][x_pos];
+        m->m[y_pos][x_pos] = m->PAC_FULL;
+        std::cout<<"HERE"<<std::endl;
+        moved = true;
+    }
+    return moved;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -37,7 +54,7 @@ void Entity::move_h(const short &dir) {
 class Player : public Entity {
 public:
     void input(const char &c);
-    void move();
+    bool move();
     Player(Map *m, const short &x_pos, const short &y_pos);
 private:
     static const char CMD_UP = 'w';
@@ -55,6 +72,8 @@ Player::Player(Map *m, const short &x_pos, const short &y_pos) {
     this -> y_pos = y_pos;
     dir_q = -1;
     dir = 2;
+    move_delay = 10;
+    frame_counter = 0;
 }
 
 
@@ -78,19 +97,20 @@ void Player::input(const char &c) {
 
 
 //called every frame
-void Player::move() {
+bool Player::move() {
+    bool moved = false;
     if(dir_q != -1 && movable(dir_q)) {  //set dir and move
         dir = dir_q;
         dir_q = -1;
-        move_h(dir);
+        moved = move_h();
     }
     else if(movable(dir)) {  //move direction previously going if possible
-        move_h(dir);
+        moved = move_h();
     }
     // else {
     //     //dont move
     // }
-    return;
+    return moved;
 }
 
 

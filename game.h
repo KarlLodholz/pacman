@@ -40,19 +40,19 @@ class Game {
         Game(const std::string &map_file);
         ~Game();
     private:
-        int time;
-        int time_inc;
+        long time;
+        long time_inc;
 
         const char CMD_PAUSE = 'p'; 
 
         std::chrono::high_resolution_clock::time_point t1;
         std::chrono::high_resolution_clock::time_point t2;
-        std::chrono::duration<int,std::milli> ts;
+        std::chrono::duration<long,std::milli> ts;
         
         //1000(milliQuo/milliNum) = fps
         //1000/(50/3) = 60fps
-        int milli_quo = 50; 
-        int milli_num = 3;
+        short milli_quo = 50; 
+        short milli_num = 1;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -95,17 +95,16 @@ void Game::input(char c) {
 
 void Game::iterate() {
     t2 = std::chrono::high_resolution_clock::now();
-    ts = std::chrono::duration_cast<std::chrono::duration<int,std::milli>>(t2 - t1);
-    if(time != (int)ts.count()*milli_num/milli_quo) { 
-        time_inc = (int)ts.count()*milli_num/milli_quo - time;
-        time = (int)ts.count()*milli_num/milli_quo;
+    ts = std::chrono::duration_cast<std::chrono::duration<long,std::milli>>(t2 - t1);
+    if(time != (long)ts.count()*milli_num/milli_quo) { 
+        time_inc = (long)ts.count()*milli_num/milli_quo - time;
+        time = (long)ts.count()*milli_num/milli_quo;
     }
-
+    //std::cout<<time<<std::endl;
     if(time_inc > 0) {
         //move entities
-        p->move();
+        if(p->move()) update = true;
         time_inc = 0;
-        update = true;
     }
     return;
 }
