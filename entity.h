@@ -33,7 +33,7 @@ bool Entity::move_h() {
         y_pos = (y_pos+((dir/2-1)*-1)*(dir*2-1));
         x_pos = x_pos+(dir/2)*((dir%2)*2-1);
         y_pos = y_pos < 0 ? m->height-1 : y_pos == m->height ? 0 : y_pos;
-        x_pos = x_pos < 0 ? m->width-1 : x_pos == m->width ? 0 : x_pos;
+        x_pos = x_pos < 0 ? m->width-1 : x_pos == m->width-1 ? 0 : x_pos;
         temp_underneath = m->m[y_pos][x_pos];
         m->m[y_pos][x_pos] = m->PAC_FULL;
         moved = true;
@@ -41,7 +41,7 @@ bool Entity::move_h() {
     else if(frame_counter % (move_delay/2) == 0 && dir>1) {
         m->m[y_pos][x_pos] = temp_underneath;
         x_pos = x_pos+((dir%2)*2-1);
-        x_pos = x_pos < 0 ? m->width-1 : x_pos == m->width ? 0 : x_pos;
+        x_pos = x_pos < 0 ? m->width-1 : x_pos == m->width-1? 0 : x_pos;
         temp_underneath = m->m[y_pos][x_pos];
         m->m[y_pos][x_pos] = m->PAC_FULL;
         //std::cout<<"HERE"<<std::endl;
@@ -56,7 +56,7 @@ class Player : public Entity {
 public:
     void input(const char &c);
     bool move();
-    Player(Map *m, const short &x_pos, const short &y_pos);
+    Player(Map *m);
 private:
     static const char CMD_UP = 'w';
     static const char CMD_DOWN = 's';
@@ -67,14 +67,16 @@ private:
 };
 
 
-Player::Player(Map *m, const short &x_pos, const short &y_pos) {
+Player::Player(Map *m) {
     this -> m = m;
-    this -> x_pos = x_pos;
-    this -> y_pos = y_pos;
+    this -> x_pos = m->ps_x;
+    this -> y_pos = m->ps_y;
     dir_q = -1;
     dir = 2;
     move_delay = 6;
     frame_counter = 0;
+    temp_underneath = m->m[y_pos][x_pos];
+    m->m[y_pos][x_pos] = m->PAC_FULL;
 }
 
 
@@ -116,8 +118,26 @@ bool Player::move() {
 
 
 //checks if player can move that direction
-bool Player::movable(const int &dir) {
-    return 1;
+//dir must only be 0-3
+bool Player::movable(const int &d) {
+    bool movable = false;
+    short tmp_y_pos = (y_pos+((d/2-1)*-1)*(d*2-1));
+    short tmp_x_pos = (x_pos+(d/2)*((d%2)*2-1));
+    tmp_y_pos = tmp_y_pos < 0 ? m->height-1 : tmp_y_pos == m->height ? 0 : tmp_y_pos;
+    tmp_x_pos = tmp_x_pos < 0 ? m->width-1 : tmp_x_pos == m->width-1 ? 0 : tmp_x_pos;
+
+    if(d<2 && tmp_x_pos%2==0) //up and down
+        movable = true;
+    else if(d>1) { //left and right
+        if(tmp_x_pos%2==1) tmp_x_pos += (d%2)*2-1;
+        movable = true;
+    }
+    //return 1;
+    return (movable 
+        &&(m->m[tmp_y_pos][tmp_x_pos]==m->DOT 
+        || m->m[tmp_y_pos][tmp_x_pos]==m->BIG_DOT 
+        || m->m[tmp_y_pos][tmp_x_pos]==m->SPACE 
+        || m->m[tmp_y_pos][tmp_x_pos]==m->GHOST));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

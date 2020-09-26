@@ -12,7 +12,7 @@ public:
     std::vector< std::vector<short> > m;
     void print();
     Map(const std::string &file_name);
-    short player_start;
+    short ps_x,ps_y; //player spawn location
 
     const short SPACE     = ' ';
     const short WALL      = 9617;// ░
@@ -63,7 +63,6 @@ Map::Map(const std::string &file_name) {
             this -> m_wall[j].push_back(idx[(temp.at(i)-48)]);
         for(int i=temp.size()-1; i>=0; i--) {
             this -> m_wall[j].push_back(idx[(temp.at(i)-48)]);
-            if(m_wall[j][m_wall[j].size()-1]==idx_PLAYER_SPAWN) player_start = (m_wall[j].size()-1);
         }
         j++;
     }
@@ -72,7 +71,7 @@ Map::Map(const std::string &file_name) {
 
     for(int y = 0; y<height; y++) {
         m.push_back(std::vector<short>());
-        for(int x = 0; x<width; x++) {
+        for(int x = 0; x<width/2; x++) {
             if(m_wall[y][x] == WALL) {
                 //directions of walls.  True if wall that direction
                 bool n = y-1 != -1;
@@ -113,6 +112,13 @@ Map::Map(const std::string &file_name) {
                                 
                 m[y].push_back(w_type);
                 m[y].push_back((e_b && w_type != SPACE && w_type != NS_WALL && w_type != NW_WALL && w_type != SW_WALL) ? WE_WALL : SPACE); 
+            }
+            else if (m_wall[y][x] == PAC_FULL) {
+                ps_x = x*2;
+                ps_y = y;
+                m[y].push_back(SPACE);
+                m[y].push_back(SPACE);
+                
             }
             else {
                 m[y].push_back(m_wall[y][x]);

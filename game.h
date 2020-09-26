@@ -63,7 +63,7 @@ Game::Game(const std::string &map_file) {
     time = 0;
     t1 = std::chrono::high_resolution_clock::now();
     m = new Map(map_file);
-    p = new Player(m, m->player_start%m->width, m->player_start/ m->width);
+    p = new Player(m);
 
     //g.push_back(Chaser(width,*p));
     //g.push_back(Ghost(&Ghost::Flanker_AI(),p));
