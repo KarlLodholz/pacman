@@ -10,6 +10,9 @@ public:
     short move_delay; //number of frames before movings; must be > 0
     short frame_counter;
     short init_pos;
+    short sprite_idx;
+    std::vector<short> sprites;
+    
     Map * m;
     bool move() {return move_h();};
 protected:
@@ -21,12 +24,14 @@ protected:
     short temp_underneath;
     //helper move func
     bool move_h();
+    void process_tile_h(short &tile);
 };
 
 
 bool Entity::move_h() {
     bool moved = false;
     frame_counter++;
+    if(frame_counter )
     if(frame_counter % move_delay == 0) {
         frame_counter = 0;
         m->m[y_pos][x_pos] = temp_underneath;
@@ -34,20 +39,24 @@ bool Entity::move_h() {
         x_pos = x_pos+(dir/2)*((dir%2)*2-1);
         y_pos = y_pos < 0 ? m->height-1 : y_pos == m->height ? 0 : y_pos;
         x_pos = x_pos < 0 ? m->width-1 : x_pos == m->width-1 ? 0 : x_pos;
-        temp_underneath = m->m[y_pos][x_pos];
-        m->m[y_pos][x_pos] = m->PAC_FULL;
+        process_tile_h(m->m[y_pos][x_pos]);
         moved = true;
     }
     else if(frame_counter % (move_delay/2) == 0 && dir>1) {
         m->m[y_pos][x_pos] = temp_underneath;
         x_pos = x_pos+((dir%2)*2-1);
         x_pos = x_pos < 0 ? m->width-1 : x_pos == m->width-1? 0 : x_pos;
-        temp_underneath = m->m[y_pos][x_pos];
-        m->m[y_pos][x_pos] = m->PAC_FULL;
-        //std::cout<<"HERE"<<std::endl;
+        process_tile_h(m->m[y_pos][x_pos]);
         moved = true;
     }
     return moved;
+}
+
+void Entity::process_tile_h(short &tile) {
+    // std::cout<<"test"<<std::endl;
+    // temp_underneath = tile;
+    tile = sprites[sprite_idx];
+    return;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -63,6 +72,7 @@ private:
     static const char CMD_LEFT = 'a';
     static const char CMD_RIGHT = 'd';
     bool movable(const int &dir);
+    void process_tile_h(short &tile);
     short dir_q; // -1 = no dir queue, 0 = up, 1 = down, 2 = left, 3 = right
 };
 
@@ -71,6 +81,12 @@ Player::Player(Map *m) {
     this -> m = m;
     this -> x_pos = m->ps_x;
     this -> y_pos = m->ps_y;
+    sprite_idx = 0;
+    sprites.push_back(m->PAC_FULL);
+    sprites.push_back(m->PAC_UP);
+    sprites.push_back(m->PAC_DOWN);
+    sprites.push_back(m->PAC_LEFT);
+    sprites.push_back(m->PAC_RIGHT);
     dir_q = -1;
     dir = 2;
     move_delay = 6;
@@ -138,6 +154,18 @@ bool Player::movable(const int &d) {
         || m->m[tmp_y_pos][tmp_x_pos]==m->BIG_DOT 
         || m->m[tmp_y_pos][tmp_x_pos]==m->SPACE 
         || m->m[tmp_y_pos][tmp_x_pos]==m->GHOST));
+}
+
+void Player::process_tile_h(short &tile) {
+    if (temp_underneath == m->DOT || temp_underneath == m->BIG_DOT) {
+        if(temp_underneath == m->BIG_DOT)
+            ;//make player eat ghosts
+        temp_underneath = m->SPACE;
+        m->dots--;
+    }
+        
+    tile = sprites[sprite_idx];
+    return;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

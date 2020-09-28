@@ -10,8 +10,13 @@ class Map {
 public:
     short width, height;
     std::vector< std::vector<short> > m;
+    
+    short dots;
+    
     void print();
+    
     Map(const std::string &file_name);
+    
     short ps_x,ps_y; //player spawn location
 
     const short SPACE     = ' ';
@@ -56,7 +61,6 @@ Map::Map(const std::string &file_name) {
     std::string temp;
     std::fstream f(file_name);
     int j=0;
-
     while(std::getline(f,temp)) {
         this -> m_wall.push_back(std::vector<short>());
         for(int i=0; i<temp.size(); i++)
@@ -68,7 +72,7 @@ Map::Map(const std::string &file_name) {
     }
     this -> width = m_wall[0].size() * 2;
     this -> height = m_wall.size();
-
+    this -> dots = 0;
     for(int y = 0; y<height; y++) {
         m.push_back(std::vector<short>());
         for(int x = 0; x<width/2; x++) {
@@ -121,6 +125,7 @@ Map::Map(const std::string &file_name) {
                 
             }
             else {
+                if(m_wall[y][x] == DOT || m_wall[y][x] == BIG_DOT) dots++;
                 m[y].push_back(m_wall[y][x]);
                 m[y].push_back(SPACE);
             }
@@ -139,7 +144,7 @@ void Map::print() {
         std::cout<<'\n';//'\n';
     }
     
-    std::cout<<std::endl;
+    std::cout<<"\n"<<dots<<std::endl;
     
     return;
 }
