@@ -12,7 +12,7 @@ public:
     std::vector< std::vector<short> > m;
     
     short dots;
-    
+    long frame_counter;
     void print();
     
     Map(const std::string &file_name);
