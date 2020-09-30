@@ -5,14 +5,15 @@
 #include <vector>
 #include <codecvt>
 #include <locale>
+// #include "game.h"
 
 class Map {
 public:
     short width, height;
     std::vector< std::vector<short> > m;
-    
     short dots;
-    long frame_counter;
+    char input;
+    unsigned long frame_counter;
     void print();
     
     Map(const std::string &file_name);
@@ -58,8 +59,10 @@ private:
 ///////////////////////////////////////////////////////////////////////////////
 
 Map::Map(const std::string &file_name) {
+    frame_counter = 0;
     std::string temp;
     std::fstream f(file_name);
+    
     int j=0;
     while(std::getline(f,temp)) {
         this -> m_wall.push_back(std::vector<short>());
@@ -134,7 +137,6 @@ Map::Map(const std::string &file_name) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-
 void Map::print() {
     using Converter = std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>, wchar_t>;
     for(int y = 0; y < height; y++) {

@@ -31,7 +31,7 @@ class Game {
         bool update; //set to true to reprint screen
         bool playing;
         Map *m;
-        Player *p;
+        std::vector<Entity*> entities;
         //std::vector<Ghost> g;
         void print();
         void input(char c);
@@ -63,8 +63,7 @@ Game::Game(const std::string &map_file) {
     time = 0;
     t1 = std::chrono::high_resolution_clock::now();
     m = new Map(map_file);
-    p = new Player(m);
-
+    entities.push_back(new Player(m));
     //g.push_back(Chaser(width,*p));
     //g.push_back(Ghost(&Ghost::Flanker_AI(),p));
 
@@ -88,7 +87,7 @@ void Game::print() {
 
 void Game::input(char c) {
     if(c == CMD_PAUSE) pause();
-    else p->input(c);
+    else m->input = c;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -100,11 +99,11 @@ void Game::iterate() {
         time_inc = (long)ts.count()*milli_num/milli_quo - time;
         time = (long)ts.count()*milli_num/milli_quo;
     }
-    //std::cout<<time<<std::endl;
     if(time_inc > 0) {
-        //move entities
-        if(p->move()) update = true;
         time_inc = 0;
+        m->frame_counter++;
+        for(int i = 0; i < entities.size(); i++)
+            if(entities[i]->update()) update = true;
     }
     return;
 }
