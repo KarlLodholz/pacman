@@ -14,7 +14,7 @@ public:
     std::vector<short> sprites;
     
     Map * m;
-    bool update() {std::cout<<"update"<<std::endl;return false;};
+    virtual bool update() {std::cout<<"update"<<std::endl;return false;};
 protected:
     short dir; // -1 = not movable, 0 = up, 1 = down, 2 = left, 3 = right
     short x_pos;
@@ -24,7 +24,7 @@ protected:
     short temp_underneath;
     //helper move func
     void move_h();
-    void process_tile_h();
+    virtual void process_tile_h();
 };
 
 void Entity::move_h() {
@@ -43,11 +43,11 @@ void Entity::move_h() {
     return;
 }
 
-// void Entity::process_tile_h() {
-//     // temp_underneath = m->m[y_pos][x_pos];
-//     // m->m[y_pos][x_pos] = sprites[sprite_idx];
-//     return;
-// }
+void Entity::process_tile_h() {
+    // temp_underneath = m->m[y_pos][x_pos];
+    // m->m[y_pos][x_pos] = sprites[sprite_idx];
+    return;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
