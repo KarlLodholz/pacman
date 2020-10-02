@@ -14,9 +14,10 @@ public:
     std::vector<short> sprites;
     
     Map * m;
-    virtual bool update() {std::cout<<"update"<<std::endl;return false;};
+    virtual bool update() {return false;};
 protected:
-    short dir; // -1 = not movable, 0 = up, 1 = down, 2 = left, 3 = right
+    //negative values keeps track of last value
+    short dir; // -(4-3) not movable , 0 = up, 1 = down, 2 = left, 3 = right
     short x_pos;
     short y_pos;
 
@@ -24,7 +25,7 @@ protected:
     short temp_underneath;
     //helper move func
     void move_h();
-    virtual void process_tile_h();
+    virtual void process_tile_h() {};
 };
 
 void Entity::move_h() {
@@ -40,12 +41,8 @@ void Entity::move_h() {
     temp_underneath = m->m[y_pos][x_pos];
     //update map with entity's new postion
     m->m[y_pos][x_pos] = sprites[sprite_idx];
-    return;
-}
-
-void Entity::process_tile_h() {
-    // temp_underneath = m->m[y_pos][x_pos];
-    // m->m[y_pos][x_pos] = sprites[sprite_idx];
+    //process the new tile
+    process_tile_h();
     return;
 }
 
@@ -83,25 +80,25 @@ Player::Player(Map *m) {
     // x needs to be delayed half as long as y so the speed of player looks the
     // same vertically as horizonatlly
     move_delay = 6;
-
     temp_underneath = m->m[y_pos][x_pos];
     m->m[y_pos][x_pos] = m->PAC_FULL;
 }
 
 
 void Player::input() {
+    short tmp_d = dir + (dir < 0 ? 4 : 0); //gets the last direction moving, if the player had stopped moving
     switch(m->input) {
         case CMD_UP:
-            if(dir > 1) dir_q = 0;
+            if(tmp_d > 1 ) dir_q = 0;
             break;
         case CMD_DOWN:
-            if(dir > 1) dir_q = 1;
+            if(tmp_d > 1) dir_q = 1;
             break;
         case CMD_LEFT:
-            if(dir < 2) dir_q = 2;
+            if(tmp_d < 2) dir_q = 2;
             break;
         case CMD_RIGHT:
-            if(dir < 2) dir_q = 3;
+            if(tmp_d < 2) dir_q = 3;
             break; 
     }
     return;
@@ -111,17 +108,14 @@ void Player::input() {
 //called every frame
 bool Player::update() {
     bool update = false;
-    input();
+    if(m->input != 0)input();
     if(dir_q != -1 && movable(dir_q)) {  //set dir if the queued direction is available
         dir = dir_q;
         dir_q = -1;
     }
     if((m->frame_counter % move_delay == 0 && dir < 2) || (m->frame_counter % (move_delay/2) == 0 && dir > 1)) {
-        if(this->movable(dir)) {
-            move_h();
-            process_tile_h();
-        }
-        sprite_idx = sprite_idx? 0 : (dir+1); //will toggle between the the full and directional one 
+        sprite_idx = sprite_idx? 0 : (dir+1); //will toggle between the the full and directional sprite
+        if(this->movable(dir)) move_h();
         update = true;
     }
     return update;
@@ -132,23 +126,25 @@ bool Player::update() {
 //dir must only be 0-3
 bool Player::movable(const int &d) {
     bool movable = false;
-    short tmp_y_pos = (y_pos+((d/2-1)*-1)*(d*2-1));
-    short tmp_x_pos = (x_pos+(d/2)*((d%2)*2-1));
-    tmp_y_pos = tmp_y_pos < 0 ? m->height-1 : tmp_y_pos == m->height ? 0 : tmp_y_pos;
-    tmp_x_pos = tmp_x_pos < 0 ? m->width-1 : tmp_x_pos == m->width-1 ? 0 : tmp_x_pos;
+    if(!(d<0)) {
+        short tmp_y_pos = (y_pos+((d/2-1)*-1)*(d*2-1));
+        short tmp_x_pos = (x_pos+(d/2)*((d%2)*2-1));
+        tmp_y_pos = tmp_y_pos < 0 ? m->height-1 : tmp_y_pos == m->height ? 0 : tmp_y_pos;
+        tmp_x_pos = tmp_x_pos < 0 ? m->width-1 : tmp_x_pos == m->width-1 ? 0 : tmp_x_pos;
 
-    if(d<2 && tmp_x_pos%2==0) //up and down
-        movable = true;
-    else if(d>1) { //left and right
-        if(tmp_x_pos%2==1) tmp_x_pos += (d%2)*2-1;
-        movable = true;
+        if(d<2 && tmp_x_pos%2==0) //up and down
+            movable = true;
+        else if(d>1) { //left and right
+            if(tmp_x_pos%2==1) tmp_x_pos += (d%2)*2-1;
+            movable = true;
+        }
+        movable &= m->m[tmp_y_pos][tmp_x_pos]==m->DOT 
+            || m->m[tmp_y_pos][tmp_x_pos]==m->BIG_DOT 
+            || m->m[tmp_y_pos][tmp_x_pos]==m->SPACE 
+            || m->m[tmp_y_pos][tmp_x_pos]==m->GHOST;
+        if((!movable) && d == dir) dir -= 4;
     }
-    //return 1;
-    return (movable 
-        &&(m->m[tmp_y_pos][tmp_x_pos]==m->DOT 
-        || m->m[tmp_y_pos][tmp_x_pos]==m->BIG_DOT 
-        || m->m[tmp_y_pos][tmp_x_pos]==m->SPACE 
-        || m->m[tmp_y_pos][tmp_x_pos]==m->GHOST));
+    return movable;
 }
 
 void Player::process_tile_h() {

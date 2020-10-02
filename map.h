@@ -60,6 +60,7 @@ private:
 
 Map::Map(const std::string &file_name) {
     frame_counter = 0;
+    input = 2;
     std::string temp;
     std::fstream f(file_name);
     

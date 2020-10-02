@@ -104,6 +104,7 @@ void Game::iterate() {
         m->frame_counter++;
         for(int i = 0; i < entities.size(); i++)
             if(entities[i]->update()) update = true;
+        m->input = 0;
     }
     return;
 }
