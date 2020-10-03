@@ -108,12 +108,16 @@ void Player::input() {
 //called every frame
 bool Player::update() {
     bool update = false;
-    if(m->input != 0)input();
     if(dir_q != -1 && movable(dir_q)) {  //set dir if the queued direction is available
         dir = dir_q;
         dir_q = -1;
     }
     if((m->frame_counter % move_delay == 0 && dir < 2) || (m->frame_counter % (move_delay/2) == 0 && dir > 1)) {
+        if(m->input != 0)input();
+            if(dir_q != -1 && movable(dir_q)) {  //set dir if the queued direction is available
+        dir = dir_q;
+        dir_q = -1;
+    }
         sprite_idx = sprite_idx? 0 : (dir+1); //will toggle between the the full and directional sprite
         if(this->movable(dir)) move_h();
         update = true;
