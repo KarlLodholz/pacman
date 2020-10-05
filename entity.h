@@ -155,6 +155,7 @@ void Player::process_tile_h() {
     if (temp_underneath == m->DOT || temp_underneath == m->BIG_DOT) {
         if(temp_underneath == m->BIG_DOT)
             ;//make player eat ghosts
+        m->inc_score(temp_underneath);
         temp_underneath = m->SPACE;
         m->dots--;
     }

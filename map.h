@@ -16,7 +16,7 @@ public:
     unsigned long frame_counter;
     void print();
     
-    Map(const std::string &file_name);
+    Map(const std::string &file_name, unsigned short *score);
     
     short ps_x,ps_y; //player spawn location
 
@@ -39,6 +39,10 @@ public:
     const short PAC_LEFT  = 4161;//'၁';
     const short PAC_RIGHT = 4100;//'င';
 
+    const short DOT_VAL = 10;
+    const short BIG_DOT_VAL = 50;
+    void inc_score(const short &obj);
+
 private:
     //printing map vector
     std::vector< std::vector<short> > m_wall;
@@ -54,11 +58,14 @@ private:
 
     const std::vector<short> idx = {  SPACE,WALL,PAC_WALL,DOT,BIG_DOT,GHOST,
                                     PAC_FULL,PAC_UP,PAC_DOWN,PAC_LEFT,PAC_RIGHT};
+    
+    unsigned short score;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
 
-Map::Map(const std::string &file_name) {
+Map::Map(const std::string &file_name, unsigned short *score) {
+    this -> score = *score; //links the score sent by game to map
     frame_counter = 0;
     input = 2;
     std::string temp;
@@ -138,8 +145,11 @@ Map::Map(const std::string &file_name) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
 void Map::print() {
     using Converter = std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>, wchar_t>;
+    
+    std::cout<<"Score: "<<score<<'\n';
     for(int y = 0; y < height; y++) {
         for(int x = 0; x < width; x++) {
             std::cout<< Converter{}.to_bytes(m[y][x]);
@@ -149,6 +159,13 @@ void Map::print() {
     
     std::cout<<"\n"<<dots<<std::endl;
     
+    return;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+void Map::inc_score(const short &obj) {
+    score += (obj == DOT ? DOT_VAL : BIG_DOT_VAL);
     return;
 }
 
