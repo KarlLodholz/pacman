@@ -16,7 +16,7 @@ public:
     unsigned long frame_counter;
     void print();
     
-    Map(const std::string &file_name, unsigned short *score);
+    Map(const std::string &file_name, unsigned long *score, unsigned short *lives);
     
     short ps_x,ps_y; //player spawn location
 
@@ -41,7 +41,7 @@ public:
 
     const short DOT_VAL = 10;
     const short BIG_DOT_VAL = 50;
-    void inc_score(const short &obj);
+    void inc_score(const long &obj);
 
 private:
     //printing map vector
@@ -59,13 +59,17 @@ private:
     const std::vector<short> idx = {  SPACE,WALL,PAC_WALL,DOT,BIG_DOT,GHOST,
                                     PAC_FULL,PAC_UP,PAC_DOWN,PAC_LEFT,PAC_RIGHT};
     
-    unsigned short score;
+    unsigned long score;
+    unsigned short lives;
+    unsigned short oneup_cntr;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
 
-Map::Map(const std::string &file_name, unsigned short *score) {
+Map::Map(const std::string &file_name, unsigned long *score, unsigned short *lives) {
     this -> score = *score; //links the score sent by game to map
+    this -> lives = *lives; //sets reference to the number of lives of the player
+    oneup_cntr = this->score / 10000; //10000 is the one up const
     frame_counter = 0;
     input = 2;
     std::string temp;
@@ -151,21 +155,22 @@ void Map::print() {
     
     std::cout<<"Score: "<<score<<'\n';
     for(int y = 0; y < height; y++) {
-        for(int x = 0; x < width; x++) {
+        for(int x = 0; x < width; x++)
             std::cout<< Converter{}.to_bytes(m[y][x]);
-        }
         std::cout<<'\n';//'\n';
     }
-    
-    std::cout<<"\n"<<dots<<std::endl;
-    
+    std::cout<<"lives: "<<lives<<std::flush;
     return;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void Map::inc_score(const short &obj) {
+void Map::inc_score(const long &obj) {
     score += (obj == DOT ? DOT_VAL : BIG_DOT_VAL);
+    if(score/10000 > oneup_cntr) {
+        oneup_cntr++;
+        lives++;
+    }
     return;
 }
 
