@@ -44,7 +44,7 @@ class Game {
     private:
         long time;
         long time_inc;
-
+        std::string map_file;
         const char CMD_PAUSE = 'p'; 
 
         std::chrono::high_resolution_clock::time_point t1;
@@ -60,13 +60,14 @@ class Game {
 ///////////////////////////////////////////////////////////////////////////////
 
 Game::Game(const std::string &map_file) {
+    this -> map_file = map_file;
     update = false;
     playing = true;
-    score = 9800;
+    score = 0;
     lives = 3;
     time = 0;
     t1 = std::chrono::high_resolution_clock::now();
-    m = new Map(map_file, &score, &lives);
+    m = new Map(this->map_file, &score, &lives);
     entities.push_back(new Player(m));
     //g.push_back(Chaser(width,*p));
     //g.push_back(Ghost(&Ghost::Flanker_AI(),p));
@@ -107,7 +108,9 @@ void Game::iterate() {
         m->frame_counter++;
         for(int i = 0; i < entities.size(); i++)
             if(entities[i]->update()) update = true;
+        if(m->lvl_complete == true) new_map(map_file);
     }
+    
     return;
 }
 

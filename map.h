@@ -14,6 +14,7 @@ public:
     short dots;
     char input;
     unsigned long frame_counter;
+    bool lvl_complete;
     void print();
     
     Map(const std::string &file_name, unsigned long *score, unsigned short *lives);
@@ -44,6 +45,10 @@ public:
     void inc_score(const long &obj);
 
 private:
+    unsigned long score;
+    unsigned short lives;
+    unsigned short oneup_cntr;
+    
     //printing map vector
     std::vector< std::vector<short> > m_wall;
 
@@ -59,17 +64,17 @@ private:
     const std::vector<short> idx = {  SPACE,WALL,PAC_WALL,DOT,BIG_DOT,GHOST,
                                     PAC_FULL,PAC_UP,PAC_DOWN,PAC_LEFT,PAC_RIGHT};
     
-    unsigned long score;
-    unsigned short lives;
-    unsigned short oneup_cntr;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
 
 Map::Map(const std::string &file_name, unsigned long *score, unsigned short *lives) {
+    lvl_complete = false;
+
     this -> score = *score; //links the score sent by game to map
     this -> lives = *lives; //sets reference to the number of lives of the player
     oneup_cntr = this->score / 10000; //10000 is the one up const
+
     frame_counter = 0;
     input = 2;
     std::string temp;
@@ -159,7 +164,7 @@ void Map::print() {
             std::cout<< Converter{}.to_bytes(m[y][x]);
         std::cout<<'\n';//'\n';
     }
-    std::cout<<"lives: "<<lives<<std::flush;
+    std::cout<<"lives: "<<lives<<" : "<<dots<<std::flush;
     return;
 }
 
@@ -171,6 +176,7 @@ void Map::inc_score(const long &obj) {
         oneup_cntr++;
         lives++;
     }
+    if(dots == 0) lvl_complete = true;
     return;
 }
 
