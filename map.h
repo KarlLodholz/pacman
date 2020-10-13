@@ -17,7 +17,7 @@ public:
     bool lvl_complete;
     void print();
     
-    Map(const std::string &file_name, unsigned long *score, unsigned short *lives);
+    Map(const std::string &file_name);
     
     short ps_x,ps_y; //player spawn location
 
@@ -43,8 +43,11 @@ public:
     const short DOT_VAL = 10;
     const short BIG_DOT_VAL = 50;
     void inc_score(const long &obj);
-
+    void lvl_reset();
 private:
+    std::vector< std::vector<short> > m_cpy;
+    unsigned short dots_cpy;
+
     unsigned long score;
     unsigned short lives;
     unsigned short oneup_cntr;
@@ -68,11 +71,11 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 
-Map::Map(const std::string &file_name, unsigned long *score, unsigned short *lives) {
+Map::Map(const std::string &file_name) {
     lvl_complete = false;
 
-    this -> score = *score; //links the score sent by game to map
-    this -> lives = *lives; //sets reference to the number of lives of the player
+    this -> score = 0;
+    this -> lives = 3;
     oneup_cntr = this->score / 10000; //10000 is the one up const
 
     frame_counter = 0;
@@ -90,9 +93,9 @@ Map::Map(const std::string &file_name, unsigned long *score, unsigned short *liv
         }
         j++;
     }
-    this -> width = m_wall[0].size() * 2;
-    this -> height = m_wall.size();
-    this -> dots = 0;
+    width = m_wall[0].size() * 2;
+    height = m_wall.size();
+    dots = 0;
     for(int y = 0; y<height; y++) {
         m.push_back(std::vector<short>());
         for(int x = 0; x<width/2; x++) {
@@ -151,6 +154,9 @@ Map::Map(const std::string &file_name, unsigned long *score, unsigned short *liv
             }
         }
     }
+    m_cpy = std::vector<std::vector<short> >(m);
+    //dots = 30;
+    dots_cpy = dots;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -176,8 +182,13 @@ void Map::inc_score(const long &obj) {
         oneup_cntr++;
         lives++;
     }
-    if(dots == 0) lvl_complete = true;
     return;
+}
+
+void Map::lvl_reset() {
+    lvl_complete = false;
+    dots = dots_cpy;
+    m = m_cpy;
 }
 
 #endif

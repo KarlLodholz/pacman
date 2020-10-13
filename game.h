@@ -32,8 +32,6 @@ class Game {
         bool playing;
         Map *m;
         std::vector<Entity*> entities;
-        unsigned short lives;
-        unsigned long score;
         void print();
         void input(char c);
         void iterate();
@@ -63,11 +61,9 @@ Game::Game(const std::string &map_file) {
     this -> map_file = map_file;
     update = false;
     playing = true;
-    score = 0;
-    lives = 3;
     time = 0;
     t1 = std::chrono::high_resolution_clock::now();
-    m = new Map(this->map_file, &score, &lives);
+    m = new Map(this->map_file);
     entities.push_back(new Player(m));
     //g.push_back(Chaser(width,*p));
     //g.push_back(Ghost(&Ghost::Flanker_AI(),p));
@@ -108,7 +104,10 @@ void Game::iterate() {
         m->frame_counter++;
         for(int i = 0; i < entities.size(); i++)
             if(entities[i]->update()) update = true;
-        if(m->lvl_complete == true) new_map(map_file);
+        if(m->lvl_complete == true) {
+            m->lvl_reset();
+            for(int i = 0; i < entities.size(); i++) entities[i]->reset();
+        }
     }
     
     return;
@@ -117,14 +116,6 @@ void Game::iterate() {
 ///////////////////////////////////////////////////////////////////////////////
 
 void Game::pause() {
-    return;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-void Game::new_map(const std::string &map_file) {
-    m->~Map();
-    m = new Map(map_file, &score, &lives);
     return;
 }
 

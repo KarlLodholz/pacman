@@ -15,6 +15,7 @@ public:
     
     Map * m;
     virtual bool update() {return false;};
+    virtual void reset() {};
 protected:
     //negative values keeps track of last value
     short dir; // -(4-3) not movable , 0 = up, 1 = down, 2 = left, 3 = right
@@ -51,6 +52,7 @@ void Entity::move_h() {
 class Player : public Entity {
 public:
     bool update();
+    void reset();
     Player(Map *m);
 private:
     static const char CMD_UP = 'w';
@@ -125,6 +127,13 @@ bool Player::update() {
     return update;
 }
 
+void Player::reset() {
+    this -> x_pos = m->ps_x;
+    this -> y_pos = m->ps_y;
+    dir_q = -1;
+    dir = 2;
+}
+
 
 //checks if player can move that direction
 //dir must only be 0-3
@@ -157,7 +166,8 @@ void Player::process_tile_h() {
             ;//make player eat ghosts
         m->inc_score(temp_underneath);
         temp_underneath = m->SPACE;
-        m->dots--;
+        ;
+        if(!(--(m->dots))) m->lvl_complete = true;
     }
         
     m->m[y_pos][x_pos] = sprites[sprite_idx];
