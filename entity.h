@@ -88,19 +88,18 @@ Player::Player(Map *m) {
 
 
 void Player::input() {
-    short tmp_d = dir + (dir < 0 ? 4 : 0); //gets the last direction moving, if the player had stopped moving
     switch(m->input) {
         case CMD_UP:
-            if(tmp_d > 1 ) dir_q = 0;
+            dir_q = 0;
             break;
         case CMD_DOWN:
-            if(tmp_d > 1) dir_q = 1;
+            dir_q = 1;
             break;
         case CMD_LEFT:
-            if(tmp_d < 2) dir_q = 2;
+            dir_q = 2;
             break;
         case CMD_RIGHT:
-            if(tmp_d < 2) dir_q = 3;
+            dir_q = 3;
             break; 
     }
     return;
@@ -116,10 +115,10 @@ bool Player::update() {
     }
     if((m->frame_counter % move_delay == 0 && dir < 2) || (m->frame_counter % (move_delay/2) == 0 && dir > 1)) {
         if(m->input != 0)input();
-            if(dir_q != -1 && movable(dir_q)) {  //set dir if the queued direction is available
-        dir = dir_q;
-        dir_q = -1;
-    }
+        if(dir_q != -1 && movable(dir_q)) {  //set dir if the queued direction is available
+            dir = dir_q;
+            dir_q = -1;
+        }
         sprite_idx = sprite_idx? 0 : (dir+1); //will toggle between the the full and directional sprite
         if(this->movable(dir)) move_h();
         update = true;
@@ -155,7 +154,7 @@ bool Player::movable(const int &d) {
             || m->m[tmp_y_pos][tmp_x_pos]==m->BIG_DOT 
             || m->m[tmp_y_pos][tmp_x_pos]==m->SPACE 
             || m->m[tmp_y_pos][tmp_x_pos]==m->GHOST;
-        if((!movable) && d == dir) dir -= 4;
+        if((!movable) && d == dir) dir = -1; //sets dir to not moving
     }
     return movable;
 }

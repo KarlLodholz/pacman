@@ -155,7 +155,6 @@ Map::Map(const std::string &file_name) {
         }
     }
     m_cpy = std::vector<std::vector<short> >(m);
-    //dots = 30;
     dots_cpy = dots;
 }
 
