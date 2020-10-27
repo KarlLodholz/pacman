@@ -175,33 +175,32 @@ void Player::process_tile_h() {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-// class Ghost : public Entity {
-// public:
-//     int target;
-//     //void (Ghost::*ai)(); //pointer to the ai func determined at init
-//     //Ghost(void (Ghost::*func)(), Player player, const int &init_pos);
-//     //Ghost();
-// private:
-//     int width;
-// };
+class Ghost : public Entity {
+public:
+    int target;
+    void (Ghost::*ai)(); //pointer to the ai func determined at init
+    Ghost(void (Ghost::*func)(), Player player);
+    Ghost();
+private:
+    int width;
+};
 
-// Ghost::Ghost(void (Ghost::*func)(), Player player) {
-//     this->ai = func;
-//     this->init_pos = init_pos;
-// }
+Ghost::Ghost(void (Ghost::*func)(), Player player) {
+    this->ai = func;
+    this->init_pos = init_pos;
+}
 
-// class Chaser : public Ghost {
-//     public:
-//         Chaser(const int &width, Player p) {
-//             player_pos = &p.pos;
+class Chaser : public Ghost {
+    public:
+        Chaser(const int &width, Player p) {
 
-//         };
-//         void ai() {
-//             target = *player_pos;
-//         };
-//     private:
-//         int *player_pos;
-// };
+        };
+        void ai() {
+            target = *player_pos;
+        };
+    private:
+        int *player_pos;
+};
 
 // class Flanker : public Ghost {
 //     public:
