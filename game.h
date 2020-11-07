@@ -30,6 +30,7 @@ class Game {
     public:
         bool update; //set to true to reprint screen
         bool playing;
+        bool paused;
         Map *m;
         std::vector<Entity*> entities;
         void print();
@@ -61,6 +62,7 @@ Game::Game(const std::string &map_file) {
     this -> map_file = map_file;
     update = false;
     playing = true;
+    paused = false;
     time = 0;
     t1 = std::chrono::high_resolution_clock::now();
     m = new Map(this->map_file);
@@ -116,6 +118,7 @@ void Game::iterate() {
 ///////////////////////////////////////////////////////////////////////////////
 
 void Game::pause() {
+    paused = !paused;
     return;
 }
 

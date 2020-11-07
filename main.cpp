@@ -12,7 +12,7 @@ int main(int argc, char** argv) {
             g.update = true;
             g.input((char)std::getchar());
         }
-        g.iterate();
+        if(!g.paused) g.iterate();
     } while(g.playing);
     return 0;
 }
