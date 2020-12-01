@@ -23,13 +23,14 @@ public:
 
     const short SPACE     = ' ';
     const short WALL      = 9617;// ░
-    const short SWE_WALL  = 9574;// ╦
+    const short WE_WALL   = 9552;// ═
+    const short NS_WALL   = 9553;// ║
     const short SE_WALL   = 9556;// ╔
     const short NW_WALL   = 9565;// ╝
     const short SW_WALL   = 9559;// ╗
     const short NE_WALL   = 9562;// ╚
-    const short NS_WALL   = 9553;// ║
-    const short WE_WALL   = 9552;// ═
+    const short SWE_WALL  = 9574;// ╦
+    
     const short PAC_WALL  = '-';
     const short DOT       = 8226;//'•';
     const short BIG_DOT   = 'o';
@@ -38,7 +39,7 @@ public:
     const short PAC_UP    = 4117;//'ပ';
     const short PAC_DOWN  = 4098;//'ဂ';
     const short PAC_LEFT  = 4161;//'၁';
-    const short PAC_RIGHT = 4100;//'င';
+    const short PAC_RIGHT = 1044;//4100;//'င';
 
     const short DOT_VAL = 10;
     const short BIG_DOT_VAL = 50;
