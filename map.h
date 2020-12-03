@@ -65,8 +65,7 @@ private:
     const char idx_GHOST_SPAWN = '5';
     const char idx_PLAYER_SPAWN = '6';
 
-    const std::vector<short> idx = {  SPACE,WALL,PAC_WALL,DOT,BIG_DOT,GHOST,
-                                    PAC_FULL,PAC_UP,PAC_DOWN,PAC_LEFT,PAC_RIGHT};
+    const std::vector<short> idx = {SPACE,WALL,PAC_WALL,DOT,BIG_DOT,GHOST,PAC_FULL};
     
 };
 
@@ -118,12 +117,9 @@ Map::Map(const std::string &file_name) {
                 bool sw = (s && w) ? m_wall[y+1][x-1]==WALL : false;
                 
                 short w_type = SPACE; //default value is fill
-                //short wN_type = SPACE;
-                if (ne && nw && se && sw);// w_type = WALL;
-                else if (!w && e_b && !(!ne || !se));
-                else if (!e && w_b && !(!nw || !sw));
+                if (ne && nw && se && sw && s_b && n_b && e_b && w_b);
 
-                else if (!n_b && e_b && s_b && w_b && (!se || !sw)) { w_type = SWE_WALL; m[y][x+x-1] = WE_WALL;}
+                else if (!n_b && e_b && s_b && w_b && (!se || !sw)) { w_type = SWE_WALL; m[y][x+x-1] = WE_WALL;} //═
 
                 else if (!ne && n_b && e_b) w_type = NE_WALL; //╚
                 else if (!nw && n_b && w_b) w_type = NW_WALL; //╝
@@ -132,6 +128,7 @@ Map::Map(const std::string &file_name) {
 
                 else if (n_b && s_b) w_type = NS_WALL; //║
                 else if (e_b && w_b) w_type = WE_WALL; //═
+                else if ((e && m_wall[y][x+1] == PAC_WALL) || (w && m_wall[y][x-1] == PAC_WALL)) w_type = WE_WALL;
 
                 else if (n_b && e_b) w_type = NE_WALL; //╚
                 else if (n_b && w_b) w_type = NW_WALL; //╝
@@ -139,7 +136,8 @@ Map::Map(const std::string &file_name) {
                 else if (s_b && w_b) w_type = SW_WALL; //╗
                                 
                 m[y].push_back(w_type);
-                m[y].push_back((e_b && w_type != SPACE && w_type != NS_WALL && w_type != NW_WALL && w_type != SW_WALL) || (m_wall[y][x+1]==PAC_WALL ) ? WE_WALL : SPACE); 
+                m[y].push_back((e_b && w_type != SPACE && w_type != NS_WALL && w_type != NW_WALL && w_type != SW_WALL) 
+                     ? WE_WALL : SPACE); 
             }
             else if (m_wall[y][x] == PAC_FULL) {
                 ps_x = x*2;
@@ -147,11 +145,6 @@ Map::Map(const std::string &file_name) {
                 m[y].push_back(SPACE);
                 m[y].push_back(SPACE);
                 
-            }
-            else if (m_wall[y][x+1] == PAC_WALL) {
-                //if(m[y][x*2-1] == SPACE) m[y][x*2-1] = PAC_WALL;
-                m[y].push_back(PAC_WALL);
-                m[y].push_back(PAC_WALL); 
             }
             else {
                 if(m_wall[y][x] == DOT || m_wall[y][x] == BIG_DOT) dots++;
