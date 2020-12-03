@@ -39,7 +39,7 @@ public:
     const short PAC_UP    = 4117;//'ပ';
     const short PAC_DOWN  = 4098;//'ဂ';
     const short PAC_LEFT  = 4161;//'၁';
-    const short PAC_RIGHT = 1044;//4100;//'င';
+    const short PAC_RIGHT = 4100;//'င';
 
     const short DOT_VAL = 10;
     const short BIG_DOT_VAL = 50;
@@ -139,7 +139,7 @@ Map::Map(const std::string &file_name) {
                 else if (s_b && w_b) w_type = SW_WALL; //╗
                                 
                 m[y].push_back(w_type);
-                m[y].push_back((e_b && w_type != SPACE && w_type != NS_WALL && w_type != NW_WALL && w_type != SW_WALL) ? WE_WALL : SPACE); 
+                m[y].push_back((e_b && w_type != SPACE && w_type != NS_WALL && w_type != NW_WALL && w_type != SW_WALL) || (m_wall[y][x+1]==PAC_WALL ) ? WE_WALL : SPACE); 
             }
             else if (m_wall[y][x] == PAC_FULL) {
                 ps_x = x*2;
@@ -147,6 +147,11 @@ Map::Map(const std::string &file_name) {
                 m[y].push_back(SPACE);
                 m[y].push_back(SPACE);
                 
+            }
+            else if (m_wall[y][x+1] == PAC_WALL) {
+                //if(m[y][x*2-1] == SPACE) m[y][x*2-1] = PAC_WALL;
+                m[y].push_back(PAC_WALL);
+                m[y].push_back(PAC_WALL); 
             }
             else {
                 if(m_wall[y][x] == DOT || m_wall[y][x] == BIG_DOT) dots++;

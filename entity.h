@@ -12,6 +12,7 @@ public:
     short move_delay;
     short init_pos;
     short sprite_idx;
+    std::vector<short> walls;
     std::vector<short> sprites;
     
     Map * m;
@@ -59,15 +60,10 @@ bool Entity::movable(const int &d) {
         //this if statement is here because the c++ compiler doesn't optimize away the
         //the code following the &= if the var to the left of the operator is false.
         //An if statement is faster than these 8 comparisons in every way.
-        if(movable)  
-            movable &= m->m[tmp_y_pos][tmp_x_pos]!=m->WE_WALL 
-                && m->m[tmp_y_pos][tmp_x_pos]!=m->WE_WALL 
-                && m->m[tmp_y_pos][tmp_x_pos]!=m->NS_WALL
-                && m->m[tmp_y_pos][tmp_x_pos]!=m->SE_WALL
-                && m->m[tmp_y_pos][tmp_x_pos]!=m->NW_WALL
-                && m->m[tmp_y_pos][tmp_x_pos]!=m->SW_WALL
-                && m->m[tmp_y_pos][tmp_x_pos]!=m->NE_WALL
-                && m->m[tmp_y_pos][tmp_x_pos]!=m->SWE_WALL;
+        if(movable)
+            for(int i = 0; i < walls.size(); i++) {  
+                movable &= m->m[tmp_y_pos][tmp_x_pos] != walls[i];
+            }
     }
     return movable;
 }
@@ -119,6 +115,15 @@ Player::Player(Map *m) {
     sprites.push_back(m->PAC_DOWN);
     sprites.push_back(m->PAC_LEFT);
     sprites.push_back(m->PAC_RIGHT);
+    walls.push_back(m->WE_WALL);
+    walls.push_back(m->NS_WALL);
+    walls.push_back(m->SE_WALL);
+    walls.push_back(m->NW_WALL);
+    walls.push_back(m->SW_WALL);
+    walls.push_back(m->NE_WALL);
+    walls.push_back(m->SWE_WALL);
+    walls.push_back(m->PAC_WALL);
+    
     dir_q = -1;
     dir = 2;
     
@@ -212,7 +217,7 @@ Ghost::Ghost(void (Ghost::*func)(), Player player) {
 bool Ghost::update() {
     if(!(start_turn_delay)){
         //if turning is possible, no need to process anything if the ghost can't respond
-        if(movable(2)) { this->ai; }
+        if(movable(dir/2?1:3) || movable(dir/2?2:4) ) { this->ai; }
         move_h();
     } else { start_turn_delay--; }
     return !(start_turn_delay);
@@ -221,7 +226,13 @@ bool Ghost::update() {
 class Chaser : public Ghost {
     public:
         Chaser(const int &width, Player p) {
-
+            walls.push_back(m->WE_WALL);
+            walls.push_back(m->NS_WALL);
+            walls.push_back(m->SE_WALL);
+            walls.push_back(m->NW_WALL);
+            walls.push_back(m->SW_WALL);
+            walls.push_back(m->NE_WALL);
+            walls.push_back(m->SWE_WALL);
         };
         void ai() {
             target = *player_pos;
