@@ -66,9 +66,14 @@ Game::Game(const std::string &map_file) {
     time = 0;
     t1 = std::chrono::high_resolution_clock::now();
     m = new Map(this->map_file);
-    entities.push_back(new Player(m));
-    //g.push_back(Chaser(width,*p));
-    //g.push_back(Ghost(&Ghost::Flanker_AI(),p));
+    Player *p = new Player(m);
+    entities.push_back(p);
+    for(int y = 0; y < m->height; y++) {
+        for(int x = 0; x < m->width; x++) {
+            if(m->m[y][x] == m->GHOST) entities.push_back(new Ghost( Ghost::chaser, p, short(y*(m->width)+x)));
+        }
+
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

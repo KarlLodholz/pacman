@@ -1,7 +1,6 @@
 #ifndef ENTITY_H
 #define ENTITY_H
 #include "map.h"
-#include "timer.h"
 #include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -203,43 +202,61 @@ public:
     int target;
     void (Ghost::*ai)(); //pointer to the ai func determined at init
     bool update();
-    Ghost(void (Ghost::*func)(), Player player);
+    void chaser_ai();
+    enum ghost_ai {chaser};
+    Ghost(ghost_ai ai, Player *player, short init_pos);
     Ghost();
 private:
     int start_turn_delay;
 };
 
-Ghost::Ghost(void (Ghost::*func)(), Player player) {
-    this->ai = func;
+Ghost::Ghost(ghost_ai ai, Player *player, short init_pos) {
+    switch(ai) {
+        case chaser:
+            this->ai = &Ghost::chaser_ai;
+            break;
+    } 
     this->init_pos = init_pos;
+    walls.push_back(player->m->WE_WALL);
+    walls.push_back(player->m->NS_WALL);
+    walls.push_back(player->m->SE_WALL);
+    walls.push_back(player->m->NW_WALL);
+    walls.push_back(player->m->SW_WALL);
+    walls.push_back(player->m->NE_WALL);
+    walls.push_back(player->m->SWE_WALL);
 }
 
 bool Ghost::update() {
     if(!(start_turn_delay)){
         //if turning is possible, no need to process anything if the ghost can't respond
-        if(movable(dir/2?1:3) || movable(dir/2?2:4) ) { this->ai; }
+        if(movable(dir/2 ? 1 : 3) || movable(dir/2 ? 2 : 4) ) { this->ai; }
         move_h();
     } else { start_turn_delay--; }
     return !(start_turn_delay);
 }
 
-class Chaser : public Ghost {
-    public:
-        Chaser(const int &width, Player p) {
-            walls.push_back(m->WE_WALL);
-            walls.push_back(m->NS_WALL);
-            walls.push_back(m->SE_WALL);
-            walls.push_back(m->NW_WALL);
-            walls.push_back(m->SW_WALL);
-            walls.push_back(m->NE_WALL);
-            walls.push_back(m->SWE_WALL);
-        };
-        void ai() {
-            target = *player_pos;
-        };
-    private:
-        int *player_pos;
-};
+void Ghost::chaser_ai() {
+    return;
+}
+
+// class Chaser : public Ghost {
+//     public:
+//         void ai();
+//         Chaser( Player p) {
+//             walls.push_back(m->WE_WALL);
+//             walls.push_back(m->NS_WALL);
+//             walls.push_back(m->SE_WALL);
+//             walls.push_back(m->NW_WALL);
+//             walls.push_back(m->SW_WALL);
+//             walls.push_back(m->NE_WALL);
+//             walls.push_back(m->SWE_WALL);
+//         };
+//         void ai() {
+//             target = *player_pos;
+//         };
+//     private:
+//         int *player_pos;
+// };
 
 // class Flanker : public Ghost {
 //     public:
