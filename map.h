@@ -166,7 +166,7 @@ void Map::print() {
     for(int y = 0; y < height; y++) {
         for(int x = 0; x < width; x++)
             std::cout<< Converter{}.to_bytes(m[y][x]);
-        std::cout<<'\n';//'\n';
+        std::cout<<'\n';
     }
     std::cout<<"lives: "<<lives<<" : "<<dots<<std::flush;
     return;

@@ -9,7 +9,7 @@ class Entity {
 public:
     //number of frames before movings; must be > 0
     short move_delay;
-    short init_pos;
+    short spawn;
     short sprite_idx;
     std::vector<short> walls;
     std::vector<short> sprites;
@@ -21,6 +21,9 @@ public:
     virtual bool update() {return false;};
     //returns entity to start locations, called when lvl is completed of player dies
     virtual void reset() {};
+    //helper functions
+    const short get_x() { return x_pos; };
+    const short get_y() { return y_pos; };
 protected:
     //negative values keeps track of last value
     short dir; // -(4-1) not movable , 0 = up, 1 = down, 2 = left, 3 = right
@@ -199,77 +202,54 @@ void Player::process_tile_h() {
 
 class Ghost : public Entity {
 public:
-    int target;
+    Entity *target;
     void (Ghost::*ai)(); //pointer to the ai func determined at init
     bool update();
     void chaser_ai();
     enum ghost_ai {chaser};
-    Ghost(ghost_ai ai, Player *player, short init_pos);
+    
+    //num turns befor ghost may leave spawn
+    short leave_delay;
+
+
+    Ghost(ghost_ai ai, Map *m, Entity *target, const short &spawn, const short & leave_delay);
     Ghost();
 private:
-    int start_turn_delay;
 };
 
-Ghost::Ghost(ghost_ai ai, Player *player, short init_pos) {
+Ghost::Ghost(ghost_ai ai, Map *m, Entity *target, const short &spawn, const short &leave_delay) {
     switch(ai) {
         case chaser:
             this->ai = &Ghost::chaser_ai;
             break;
     } 
-    this->init_pos = init_pos;
-    walls.push_back(player->m->WE_WALL);
-    walls.push_back(player->m->NS_WALL);
-    walls.push_back(player->m->SE_WALL);
-    walls.push_back(player->m->NW_WALL);
-    walls.push_back(player->m->SW_WALL);
-    walls.push_back(player->m->NE_WALL);
-    walls.push_back(player->m->SWE_WALL);
+    this->m = m;
+    this->spawn = spawn;
+    this->x_pos = spawn % m->width;
+    this->y_pos = spawn / m->width;
+    this->leave_delay = ((leave_delay*2)+5);
+    walls.push_back(m->WE_WALL);
+    walls.push_back(m->NS_WALL);
+    walls.push_back(m->SE_WALL);
+    walls.push_back(m->NW_WALL);
+    walls.push_back(m->SW_WALL);
+    walls.push_back(m->NE_WALL);
+    walls.push_back(m->SWE_WALL);
 }
 
 bool Ghost::update() {
-    if(!(start_turn_delay)){
+    if(!(leave_delay)){
         //if turning is possible, no need to process anything if the ghost can't respond
-        if(movable(dir/2 ? 1 : 3) || movable(dir/2 ? 2 : 4) ) { this->ai; }
+        if(movable(dir/2 ? 0 : 2) || movable(dir/2 ? 1 : 3) ) { this->ai; }
         move_h();
-    } else { start_turn_delay--; }
-    return !(start_turn_delay);
+    } else leave_delay--;
+    return !(leave_delay);
 }
 
 void Ghost::chaser_ai() {
+    
     return;
 }
-
-// class Chaser : public Ghost {
-//     public:
-//         void ai();
-//         Chaser( Player p) {
-//             walls.push_back(m->WE_WALL);
-//             walls.push_back(m->NS_WALL);
-//             walls.push_back(m->SE_WALL);
-//             walls.push_back(m->NW_WALL);
-//             walls.push_back(m->SW_WALL);
-//             walls.push_back(m->NE_WALL);
-//             walls.push_back(m->SWE_WALL);
-//         };
-//         void ai() {
-//             target = *player_pos;
-//         };
-//     private:
-//         int *player_pos;
-// };
-
-// class Flanker : public Ghost {
-//     public:
-//         Flanker(const int &width, Player &p, const int &distance) {
-//             flank_distance_ahead = distance;
-//         };
-//         void ai() {
-//             return;
-//         }
-//     private:
-//         int flank_distance_ahead;
-
-// };
 
 ///////////////////////////////////////////////////////////////////////////////
 
