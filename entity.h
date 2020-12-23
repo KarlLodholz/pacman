@@ -75,6 +75,7 @@ void Entity::move_h() {
     //set current tile to stored tile
     m->m[y_pos][x_pos] = temp_underneath;
     //update position
+    std::cout<< x_pos <<std::endl;
     y_pos = (y_pos+((dir/2-1)*-1)*(dir*2-1));
     x_pos = x_pos+(dir/2)*((dir%2)*2-1);
     //correct position for out of bounds
@@ -83,9 +84,13 @@ void Entity::move_h() {
     //update the stored tile to new position
     temp_underneath = m->m[y_pos][x_pos];
     //update map with entity's new postion
+    std::cout<< "bar" <<std::endl;
     m->m[y_pos][x_pos] = sprites[sprite_idx];
+    std::cout<< x_pos <<std::endl;
+
     //process the new tile
     process_tile_h();
+    //std::cout<< " - - - fo o - -" <<std::endl;
     return;
 }
 
@@ -223,11 +228,15 @@ Ghost::Ghost(ghost_ai ai, Map *m, Entity *target, const short &spawn, const shor
             this->ai = &Ghost::chaser_ai;
             break;
     } 
+    this->dir = 0;
     this->m = m;
     this->spawn = spawn;
     this->x_pos = spawn % m->width;
     this->y_pos = spawn / m->width;
     this->leave_delay = ((leave_delay*2)+5);
+    this->temp_underneath = ' ';
+    sprite_idx = 0;
+    sprites.push_back(m->GHOST);
     walls.push_back(m->WE_WALL);
     walls.push_back(m->NS_WALL);
     walls.push_back(m->SE_WALL);
@@ -240,7 +249,9 @@ Ghost::Ghost(ghost_ai ai, Map *m, Entity *target, const short &spawn, const shor
 bool Ghost::update() {
     if(!(leave_delay)){
         //if turning is possible, no need to process anything if the ghost can't respond
+        //std::cout<<"yuh"<<std::endl;
         if(movable(dir/2 ? 0 : 2) || movable(dir/2 ? 1 : 3) ) { this->ai; }
+        //std::cout<<"nuh"<<std::endl;
         move_h();
     } else leave_delay--;
     return !(leave_delay);
