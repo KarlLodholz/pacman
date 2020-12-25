@@ -71,7 +71,7 @@ Game::Game(const std::string &map_file) {
     for(int y = 0; y < m->height; y++) {
         for(int x = 0; x < m->width; x++) {
             if(m->m[y][x] == m->GHOST) 
-                entities.push_back(new Ghost(Ghost::chaser, m, entities[0], short(y*(m->width)+x), cntr++));
+                entities.push_back(new Ghost(Ghost::wanderer, m, entities[0], short(y*(m->width)+x), cntr++));
         }
     }
 }
@@ -110,9 +110,7 @@ void Game::iterate() {
         time_inc = 0;
         m->frame_counter++;
         for(int i = 0; i < entities.size(); i++) {
-            std::cout<<"\n\nentity:"<<i<<"   x:"<<entities[i]->get_x()<<"   y:"<<entities[i]->get_y()<<std::endl;
             if(entities[i]->update()) update = true;
-            std::cout<<"through"<<std::endl;
         }
         if(m->lvl_complete == true) {
             m->lvl_reset();
