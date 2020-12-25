@@ -33,7 +33,7 @@ protected:
     //value for character underneath the entity
     short temp_underneath;
     //returns if entity can move in that direction
-    virtual bool movable(const int &dir);
+    bool movable(const int &dir);
     //moves the entity
     void move_h();
     //process the tile, short, of the 2d vector, m, relative to the entity's position
@@ -75,7 +75,6 @@ void Entity::move_h() {
     //set current tile to stored tile
     m->m[y_pos][x_pos] = temp_underneath;
     //update position
-    std::cout<< x_pos <<std::endl;
     y_pos = (y_pos+((dir/2-1)*-1)*(dir*2-1));
     x_pos = x_pos+(dir/2)*((dir%2)*2-1);
     //correct position for out of bounds
@@ -84,9 +83,7 @@ void Entity::move_h() {
     //update the stored tile to new position
     temp_underneath = m->m[y_pos][x_pos];
     //update map with entity's new postion
-    std::cout<< "bar" <<std::endl;
     m->m[y_pos][x_pos] = sprites[sprite_idx];
-    std::cout<< x_pos <<std::endl;
 
     //process the new tile
     process_tile_h();
@@ -210,8 +207,9 @@ public:
     Entity *target;
     void (Ghost::*ai)(); //pointer to the ai func determined at init
     bool update();
+    void wanderer_ai();
     void chaser_ai();
-    enum ghost_ai {chaser};
+    enum ghost_ai {wanderer,chaser};
     
     //num turns befor ghost may leave spawn
     short leave_delay;
@@ -220,10 +218,14 @@ public:
     Ghost(ghost_ai ai, Map *m, Entity *target, const short &spawn, const short & leave_delay);
     Ghost();
 private:
+    int fsp();
 };
 
 Ghost::Ghost(ghost_ai ai, Map *m, Entity *target, const short &spawn, const short &leave_delay) {
     switch(ai) {
+        case wanderer:
+            this->ai = &Ghost::wanderer_ai;
+            break;
         case chaser:
             this->ai = &Ghost::chaser_ai;
             break;
@@ -249,16 +251,24 @@ Ghost::Ghost(ghost_ai ai, Map *m, Entity *target, const short &spawn, const shor
 bool Ghost::update() {
     if(!(leave_delay)){
         //if turning is possible, no need to process anything if the ghost can't respond
-        //std::cout<<"yuh"<<std::endl;
-        if(movable(dir/2 ? 0 : 2) || movable(dir/2 ? 1 : 3) ) { this->ai; }
-        //std::cout<<"nuh"<<std::endl;
+        if(movable(dir/2 ? 0 : 2) || movable(dir/2 ? 1 : 3) ) { (this->*ai)(); }
         move_h();
     } else leave_delay--;
     return !(leave_delay);
 }
 
+void Ghost::wanderer_ai() {
+    //std::cout<<"bitch"<<std::endl;
+    std::vector<int> t;
+    if(movable(dir)) t.push_back(dir);
+    if(movable(dir/2?0:2)) t.push_back(dir/2?0:2);
+    if(movable(dir/2?1:3)) t.push_back(dir/2?1:3);
+    dir = t[rand()%(t.size())];
+    //exit(1);
+    return;
+}
+
 void Ghost::chaser_ai() {
-    
     return;
 }
 
