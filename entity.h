@@ -207,9 +207,12 @@ public:
     Entity *target;
     void (Ghost::*ai)(); //pointer to the ai func determined at init
     bool update();
+    void process_tile_h();
+
     void wanderer_ai();
     void chaser_ai();
-    enum ghost_ai {wanderer,chaser};
+    void drifter_ai();
+    enum ghost_ai {wanderer,chaser,drifter};
     
     //num turns befor ghost may leave spawn
     short leave_delay;
@@ -237,6 +240,7 @@ Ghost::Ghost(ghost_ai ai, Map *m, Entity *target, const short &spawn, const shor
     this->y_pos = spawn / m->width;
     this->leave_delay = ((leave_delay*2)+5);
     this->temp_underneath = ' ';
+    this->move_delay = 5; 
     sprite_idx = 0;
     sprites.push_back(m->GHOST);
     walls.push_back(m->WE_WALL);
@@ -249,26 +253,47 @@ Ghost::Ghost(ghost_ai ai, Map *m, Entity *target, const short &spawn, const shor
 }
 
 bool Ghost::update() {
-    if(!(leave_delay)){
-        //if turning is possible, no need to process anything if the ghost can't respond
-        if(movable(dir/2 ? 0 : 2) || movable(dir/2 ? 1 : 3) ) { (this->*ai)(); }
-        move_h();
-    } else leave_delay--;
-    return !(leave_delay);
+    bool update = false;
+    //if((m->frame_counter % move_delay == 0 && dir < 2) || (m->frame_counter % (move_delay/2) == 0 && dir > 1)) {
+        if(!(leave_delay)){
+            //if turning is possible, no need to process anything if the ghost can't respond
+            if(movable(dir/2 ? 0 : 2) || movable(dir/2 ? 1 : 3) ) { (this->*ai)(); }
+            if(dir >= 0) {
+                if(m->m[y_pos][x_pos] != m->GHOST) temp_underneath = m->m[y_pos][x_pos];
+                move_h();
+            }
+            update = true;
+        } else leave_delay--;
+//    }
+    return update;//!(leave_delay);
+}
+
+void Ghost::process_tile_h() {
+    if (temp_underneath == m->GHOST) {
+        temp_underneath = ' ';
+    }
+    return;
 }
 
 void Ghost::wanderer_ai() {
     //std::cout<<"bitch"<<std::endl;
-    std::vector<int> t;
-    if(movable(dir)) t.push_back(dir);
-    if(movable(dir/2?0:2)) t.push_back(dir/2?0:2);
-    if(movable(dir/2?1:3)) t.push_back(dir/2?1:3);
-    dir = t[rand()%(t.size())];
-    //exit(1);
+    std::vector<int> d;
+    if(movable(dir)) d.push_back(dir);
+    if(movable(dir/2?0:2)) d.push_back(dir/2?0:2);
+    if(movable(dir/2?1:3)) d.push_back(dir/2?1:3);
+    dir = d[rand()%(d.size())];
+    // dir = (d.size() == 0 ? d[rand()%(d.size())] : dir + (((dir%2)*(-2))+1));
+    if(!movable(dir)) dir = -1;
     return;
 }
 
 void Ghost::chaser_ai() {
+    
+    return;
+}
+
+void Ghost::drifter_ai() {
+
     return;
 }
 
