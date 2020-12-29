@@ -190,12 +190,17 @@ void Player::reset() {
 void Player::process_tile_h() {
     if (temp_underneath == m->DOT || temp_underneath == m->BIG_DOT) {
         if(temp_underneath == m->BIG_DOT)
-            ;//make player eat ghosts
+            m->set_vulnerable();  
         m->inc_score(temp_underneath);
         temp_underneath = m->SPACE;
-        ;
-        if(!(--(m->dots))) m->lvl_complete = true;
-    }
+        if(!(--(m->dots))) m->complete_lvl();
+    } else if (temp_underneath == m->GHOST) {
+       if(m->is_vulnerable()) { //should check on the off chance a ghost is suicidal
+            //ghost eaten 
+        } else { //ghost ate player
+            m->player_death();
+        }
+    }   
         
     return;
 }
@@ -240,7 +245,7 @@ Ghost::Ghost(ghost_ai ai, Map *m, Entity *target, const short &spawn, const shor
     this->y_pos = spawn / m->width;
     this->leave_delay = ((leave_delay*2)+5);
     this->temp_underneath = ' ';
-    this->move_delay = 5; 
+    this->move_delay = 2; 
     sprite_idx = 0;
     sprites.push_back(m->GHOST);
     walls.push_back(m->WE_WALL);
@@ -254,7 +259,7 @@ Ghost::Ghost(ghost_ai ai, Map *m, Entity *target, const short &spawn, const shor
 
 bool Ghost::update() {
     bool update = false;
-    //if((m->frame_counter % move_delay == 0 && dir < 2) || (m->frame_counter % (move_delay/2) == 0 && dir > 1)) {
+    if((m->frame_counter % move_delay == 0 && dir < 2) || (m->frame_counter % (move_delay/2) == 0 && dir > 1)) {
         if(!(leave_delay)){
             //if turning is possible, no need to process anything if the ghost can't respond
             if(movable(dir/2 ? 0 : 2) || movable(dir/2 ? 1 : 3) ) { (this->*ai)(); }
@@ -264,14 +269,18 @@ bool Ghost::update() {
             }
             update = true;
         } else leave_delay--;
-//    }
-    return update;//!(leave_delay);
+    }
+    return update;
 }
 
 void Ghost::process_tile_h() {
-    if (temp_underneath == m->GHOST) {
-        temp_underneath = ' ';
-    }
+    if( temp_underneath == m->PAC_FULL || temp_underneath == m->PAC_UP || temp_underneath == m->PAC_DOWN || temp_underneath == m->PAC_LEFT || temp_underneath == m->PAC_RIGHT ) {
+        if(m->is_vulnerable()) { //should check on the off chance a ghost is suicidal
+            //ghost eaten 
+        } else { //ghost ate player
+            m->player_death();
+        }
+    }   
     return;
 }
 

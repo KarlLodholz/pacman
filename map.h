@@ -14,7 +14,6 @@ public:
     short dots;
     char input;
     unsigned long frame_counter;
-    bool lvl_complete;
     void print();
     
     Map(const std::string &file_name);
@@ -44,15 +43,26 @@ public:
     const short DOT_VAL = 10;
     const short BIG_DOT_VAL = 50;
     void inc_score(const long &obj);
-    void lvl_reset();
+    bool is_lvl_complete() const { return lvl_complete; }
+    bool is_game_over() const { return game_over; }
+    bool is_vulnerable() const { return vulnerable > 0; }
+    void dec_vulnerable() { vulnerable--; return; }
+    void set_vulnerable() { vulnerable = 300; return; }
+    void player_death();
+    void complete_lvl();
 private:
     std::vector< std::vector<short> > m_cpy;
     unsigned short dots_cpy;
 
+    short lvl;
+    bool lvl_complete;
+    bool game_over;
     unsigned long score;
-    unsigned short lives;
+    short lives;
     unsigned short oneup_cntr;
     
+    short vulnerable;
+
     //printing map vector
     std::vector< std::vector<short> > m_wall;
 
@@ -67,17 +77,19 @@ private:
 
     const std::vector<short> idx = {SPACE,WALL,PAC_WALL,DOT,BIG_DOT,GHOST,PAC_FULL};
     
+    void reset_lvl();
 };
 
 ///////////////////////////////////////////////////////////////////////////////
 
 Map::Map(const std::string &file_name) {
     lvl_complete = false;
-
+    game_over = false;
+    vulnerable = 0;
     this -> score = 0;
     this -> lives = 3;
     oneup_cntr = this->score / 10000; //10000 is the one up const
-
+    
     frame_counter = 0;
     input = 2;
     std::string temp;
@@ -173,7 +185,7 @@ void Map::print() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-
+//increments the player's score
 void Map::inc_score(const long &obj) {
     score += (obj == DOT ? DOT_VAL : BIG_DOT_VAL);
     if(score/10000 > oneup_cntr) {
@@ -183,7 +195,26 @@ void Map::inc_score(const long &obj) {
     return;
 }
 
-void Map::lvl_reset() {
+///////////////////////////////////////////////////////////////////////////////
+//used when player is killed by a ghost
+void Map::player_death() {
+    if( --lives >= 0 ) {  //dec player's lives
+        reset_lvl();
+    } else {  //player has lost last life
+        game_over = true;
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//used when player collects all of the dots in the lvl
+void Map::complete_lvl() {
+    lvl++;
+    reset_lvl();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//helper func for resetting a lvl
+void Map::reset_lvl() {
     lvl_complete = false;
     dots = dots_cpy;
     m = m_cpy;

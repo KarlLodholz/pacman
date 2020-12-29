@@ -110,14 +110,14 @@ void Game::iterate() {
         time_inc = 0;
         m->frame_counter++;
         for(int i = 0; i < entities.size(); i++) {
+            if(m->is_vulnerable()) m->dec_vulnerable();
             if(entities[i]->update()) update = true;
         }
-        if(m->lvl_complete == true) {
-            m->lvl_reset();
-            for(int i = 0; i < entities.size(); i++) entities[i]->reset();
-        }
+        if(m->is_game_over()) playing = false;
+        if(m->is_lvl_complete()) {
+            for(int i = 0; i < entities.size(); i++) entities[i]->reset();   
+        } 
     }
-    
     return;
 }
 
