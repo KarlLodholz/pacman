@@ -43,7 +43,7 @@ public:
     const short DOT_VAL = 10;
     const short BIG_DOT_VAL = 50;
     void inc_score(const long &obj);
-    bool is_lvl_complete() const { return lvl_complete; }
+    bool reset() { bool b = reset_flg; reset_flg = false; return b; }
     bool is_game_over() const { return game_over; }
     bool is_vulnerable() const { return vulnerable > 0; }
     void dec_vulnerable() { vulnerable--; return; }
@@ -55,7 +55,7 @@ private:
     unsigned short dots_cpy;
 
     short lvl;
-    bool lvl_complete;
+    bool reset_flg;
     bool game_over;
     unsigned long score;
     short lives;
@@ -83,7 +83,7 @@ private:
 ///////////////////////////////////////////////////////////////////////////////
 
 Map::Map(const std::string &file_name) {
-    lvl_complete = false;
+    reset_flg = false; //flag for when lvl needs to be reset
     game_over = false;
     vulnerable = 0;
     this -> score = 0;
@@ -110,7 +110,7 @@ Map::Map(const std::string &file_name) {
     dots = 0;
     for(int y = 0; y<height; y++) {
         m.push_back(std::vector<short>());
-        for(int x = 0; x<width/2; x++) {
+        for(int x = 0; x<m_wall[y].size(); x++) {
             if(m_wall[y][x] == WALL) {
                 //directions of walls.  True if wall that direction
                 bool n = y-1 != -1;
@@ -152,11 +152,8 @@ Map::Map(const std::string &file_name) {
                      ? WE_WALL : SPACE); 
             }
             else if (m_wall[y][x] == PAC_FULL) {
-                ps_x = x*2;
-                ps_y = y;
                 m[y].push_back(SPACE);
-                m[y].push_back(SPACE);
-                
+                m[y].push_back(x < width / 4 ? PAC_FULL : SPACE);
             }
             else {
                 if(m_wall[y][x] == DOT || m_wall[y][x] == BIG_DOT) dots++;
@@ -215,7 +212,7 @@ void Map::complete_lvl() {
 ///////////////////////////////////////////////////////////////////////////////
 //helper func for resetting a lvl
 void Map::reset_lvl() {
-    lvl_complete = false;
+    reset_flg = true;
     dots = dots_cpy;
     m = m_cpy;
 }

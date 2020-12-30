@@ -33,8 +33,8 @@ class Game {
         bool paused;
         Map *m;
         std::vector<Entity*> entities;
-        void print();
-        void input(char c);
+        void print(); //consider this a frame reset
+        void input(char c); //filters user input
         void iterate();
         void pause();
         void new_map(const std::string &map_file);
@@ -53,7 +53,7 @@ class Game {
         //1000(milliQuo/milliNum) = fps
         //1000/(50/3) = 60fps
         short milli_quo = 50; 
-        short milli_num = 2;
+        short milli_num = 4;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -66,12 +66,20 @@ Game::Game(const std::string &map_file) {
     time = 0;
     t1 = std::chrono::high_resolution_clock::now();
     m = new Map(this->map_file);
-    entities.push_back(new Player(m));
     short cntr = 0;
     for(int y = 0; y < m->height; y++) {
         for(int x = 0; x < m->width; x++) {
+            if(m->m[y][x] == m->PAC_FULL) {
+                entities.push_back(new Player(m, x, y));
+                goto ghosts;
+            }
+        }
+    }
+    ghosts:
+    for(int y = 0; y < m->height; y++) {
+        for(int x = 0; x < m->width; x++) {
             if(m->m[y][x] == m->GHOST) 
-                entities.push_back(new Ghost(Ghost::wanderer, m, entities[0], short(y*(m->width)+x), cntr++));
+                entities.push_back(new Ghost(Ghost::wanderer, Ghost::flee, m, entities[0], x, y, cntr++));
         }
     }
 }
@@ -114,9 +122,10 @@ void Game::iterate() {
             if(entities[i]->update()) update = true;
         }
         if(m->is_game_over()) playing = false;
-        if(m->is_lvl_complete()) {
-            for(int i = 0; i < entities.size(); i++) entities[i]->reset();   
-        } 
+        else if(m->reset()) {
+            for(int i = 0; i < entities.size(); i++) {entities[i]->reset();}
+            //{std::cout<<"\nx:"<<entities[i]->get_x()<<" y:"<<entities[i]->get_y()<<" reset x:"; entities[i]->reset(); std::cout<<entities[i]->get_x()<<" y:"<<entities[i]->get_y()<<std::endl;};   
+        }
     }
     return;
 }

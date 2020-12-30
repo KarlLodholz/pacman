@@ -9,7 +9,6 @@ class Entity {
 public:
     //number of frames before movings; must be > 0
     short move_delay;
-    short spawn;
     short sprite_idx;
     std::vector<short> walls;
     std::vector<short> sprites;
@@ -20,20 +19,23 @@ public:
     //movement functions should be called within this function
     virtual bool update() {return false;};
     //returns entity to start locations, called when lvl is completed of player dies
-    virtual void reset() {};
+    void reset();
     //helper functions
     const short get_x() { return x_pos; };
     const short get_y() { return y_pos; };
 protected:
     //negative values keeps track of last value
-    short dir; // -(4-1) not movable , 0 = up, 1 = down, 2 = left, 3 = right
+    short dir; // 0 = up, 1 = down, 2 = left, 3 = right
     //entity position relative to the map
     short x_pos;
     short y_pos;
+    //entity spawn location
+    short spawn_x;
+    short spawn_y;
     //value for character underneath the entity
     short temp_underneath;
     //returns if entity can move in that direction
-    bool movable(const int &dir);
+    bool movable(const int &d);
     //moves the entity
     void move_h();
     //process the tile, short, of the 2d vector, m, relative to the entity's position
@@ -87,7 +89,15 @@ void Entity::move_h() {
 
     //process the new tile
     process_tile_h();
-    //std::cout<< " - - - fo o - -" <<std::endl;
+    return;
+}
+
+
+void Entity::reset() {
+    x_pos = spawn_x;
+    y_pos = spawn_y;
+    dir = 2;
+    temp_underneath = ' ';
     return;
 }
 
@@ -96,8 +106,8 @@ void Entity::move_h() {
 class Player : public Entity {
 public:
     bool update();
-    void reset();
-    Player(Map *m);
+    //void reset();
+    Player(Map *m, const short &spawn_x, const short &spawn_y);
 private:
     static const char CMD_UP = 'w';
     static const char CMD_DOWN = 's';
@@ -109,10 +119,10 @@ private:
 };
 
 
-Player::Player(Map *m) {
-    this -> m = m;
-    this -> x_pos = m->ps_x;
-    this -> y_pos = m->ps_y;
+Player::Player(Map *m, const short &spawn_x, const short &spawn_y) {
+    this->m = m;
+    this->x_pos = this->spawn_x = spawn_x;
+    this->y_pos = this->spawn_y = spawn_y;
     sprite_idx = 0;
     sprites.push_back(m->PAC_FULL);
     sprites.push_back(m->PAC_UP);
@@ -133,8 +143,8 @@ Player::Player(Map *m) {
     
     // x needs to be delayed half as long as y so the speed of player looks the
     // same vertically as horizonatlly
-    move_delay = 6;
-    temp_underneath = m->m[y_pos][x_pos];
+    move_delay = 10;
+    this->temp_underneath = ' ';
     m->m[y_pos][x_pos] = m->PAC_FULL;
 }
 
@@ -179,14 +189,6 @@ bool Player::update() {
 }
 
 
-void Player::reset() {
-    this -> x_pos = m->ps_x;
-    this -> y_pos = m->ps_y;
-    dir_q = -1;
-    dir = 2;
-}
-
-
 void Player::process_tile_h() {
     if (temp_underneath == m->DOT || temp_underneath == m->BIG_DOT) {
         if(temp_underneath == m->BIG_DOT)
@@ -211,25 +213,26 @@ class Ghost : public Entity {
 public:
     Entity *target;
     void (Ghost::*ai)(); //pointer to the ai func determined at init
+    void (Ghost::*ai_vulnerable)(); //ai for when ghost become vulnerable
     bool update();
     void process_tile_h();
-
+    
+    void flee_ai();
     void wanderer_ai();
     void chaser_ai();
     void drifter_ai();
-    enum ghost_ai {wanderer,chaser,drifter};
+    enum ghost_ai {wanderer,chaser,drifter,flee};
     
     //num turns befor ghost may leave spawn
     short leave_delay;
 
-
-    Ghost(ghost_ai ai, Map *m, Entity *target, const short &spawn, const short & leave_delay);
+    Ghost(ghost_ai ai, ghost_ai ai_vulnerable, Map *m, Entity *target, const short &spawn_x,const short &spawn_y, const short & leave_delay);
     Ghost();
 private:
     int fsp();
 };
 
-Ghost::Ghost(ghost_ai ai, Map *m, Entity *target, const short &spawn, const short &leave_delay) {
+Ghost::Ghost(ghost_ai ai, ghost_ai ai_vulnerable, Map *m, Entity *target, const short &spawn_x, const short &spawn_y, const short &leave_delay) {
     switch(ai) {
         case wanderer:
             this->ai = &Ghost::wanderer_ai;
@@ -238,14 +241,18 @@ Ghost::Ghost(ghost_ai ai, Map *m, Entity *target, const short &spawn, const shor
             this->ai = &Ghost::chaser_ai;
             break;
     } 
+    switch(ai_vulnerable) {
+        case flee:
+            this->ai_vulnerable = &Ghost::flee_ai;
+            break;
+    }
     this->dir = 0;
     this->m = m;
-    this->spawn = spawn;
-    this->x_pos = spawn % m->width;
-    this->y_pos = spawn / m->width;
+    this->x_pos = this->spawn_x = spawn_x;
+    this->y_pos = this->spawn_y = spawn_y;
     this->leave_delay = ((leave_delay*2)+5);
     this->temp_underneath = ' ';
-    this->move_delay = 2; 
+    this->move_delay = 8; 
     sprite_idx = 0;
     sprites.push_back(m->GHOST);
     walls.push_back(m->WE_WALL);
@@ -285,13 +292,12 @@ void Ghost::process_tile_h() {
 }
 
 void Ghost::wanderer_ai() {
-    //std::cout<<"bitch"<<std::endl;
     std::vector<int> d;
     if(movable(dir)) d.push_back(dir);
     if(movable(dir/2?0:2)) d.push_back(dir/2?0:2);
     if(movable(dir/2?1:3)) d.push_back(dir/2?1:3);
     dir = d[rand()%(d.size())];
-    // dir = (d.size() == 0 ? d[rand()%(d.size())] : dir + (((dir%2)*(-2))+1));
+    //dir = (d.size() == 0 ? d[rand()%(d.size())] : dir + (((dir%2)*(-2))+1));
     if(!movable(dir)) dir = -1;
     return;
 }
@@ -302,6 +308,11 @@ void Ghost::chaser_ai() {
 }
 
 void Ghost::drifter_ai() {
+
+    return;
+}
+
+void Ghost::flee_ai() {
 
     return;
 }
