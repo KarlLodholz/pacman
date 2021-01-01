@@ -269,12 +269,15 @@ bool Ghost::update() {
     if((m->frame_counter % move_delay == 0 && dir < 2) || (m->frame_counter % (move_delay/2) == 0 && dir > 1)) {
         if(!(leave_delay)){
             //if turning is possible, no need to process anything if the ghost can't respond
-            if(movable(dir/2 ? 0 : 2) || movable(dir/2 ? 1 : 3) ) { (this->*ai)(); }
+            if(m->is_vulnerable() || (dir/2 ? 0 : 2) || movable(dir/2 ? 1 : 3) ) { 
+                if(m->is_vulnerable()) (this->*ai_vulnerable)();
+                else (this->*ai)(); 
+            }
             if(dir >= 0) {
                 if(m->m[y_pos][x_pos] != m->GHOST) temp_underneath = m->m[y_pos][x_pos];
                 move_h();
+                update = true;
             }
-            update = true;
         } else leave_delay--;
     }
     return update;
@@ -313,7 +316,7 @@ void Ghost::drifter_ai() {
 }
 
 void Ghost::flee_ai() {
-
+    dir = -1;
     return;
 }
 

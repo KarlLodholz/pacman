@@ -47,7 +47,7 @@ public:
     bool is_game_over() const { return game_over; }
     bool is_vulnerable() const { return vulnerable > 0; }
     void dec_vulnerable() { vulnerable--; return; }
-    void set_vulnerable() { vulnerable = 300; return; }
+    void set_vulnerable() { vulnerable = 3000; return; }
     void player_death();
     void complete_lvl();
 private:
