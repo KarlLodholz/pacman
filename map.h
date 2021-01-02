@@ -45,9 +45,7 @@ public:
     void inc_score(const long &obj);
     bool reset() { bool b = reset_flg; reset_flg = false; return b; }
     bool is_game_over() const { return game_over; }
-    bool is_vulnerable() const { return vulnerable > 0; }
-    void dec_vulnerable() { vulnerable--; return; }
-    void set_vulnerable() { vulnerable = 3000; return; }
+    bool vulnerable;
     void player_death();
     void complete_lvl();
 private:
@@ -61,7 +59,7 @@ private:
     short lives;
     unsigned short oneup_cntr;
     
-    short vulnerable;
+    //short vulnerable;
 
     //printing map vector
     std::vector< std::vector<short> > m_wall;
@@ -85,7 +83,7 @@ private:
 Map::Map(const std::string &file_name) {
     reset_flg = false; //flag for when lvl needs to be reset
     game_over = false;
-    vulnerable = 0;
+    vulnerable = false;
     this -> score = 0;
     this -> lives = 3;
     oneup_cntr = this->score / 10000; //10000 is the one up const

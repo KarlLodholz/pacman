@@ -192,17 +192,19 @@ bool Player::update() {
 void Player::process_tile_h() {
     if (temp_underneath == m->DOT || temp_underneath == m->BIG_DOT) {
         if(temp_underneath == m->BIG_DOT)
-            m->set_vulnerable();  
+            m->vulnerable = true;  
         m->inc_score(temp_underneath);
         temp_underneath = m->SPACE;
         if(!(--(m->dots))) m->complete_lvl();
-    } else if (temp_underneath == m->GHOST) {
-       if(m->is_vulnerable()) { //should check on the off chance a ghost is suicidal
-            //ghost eaten 
-        } else { //ghost ate player
-            m->player_death();
-        }
-    }   
+    } 
+    // let ghost determine stuffs
+    // else if (temp_underneath == m->GHOST) {
+    //     if(m->is_vulnerable()) {
+    //         //ghost eaten 
+    //     } else { //ghost ate player
+    //         m->player_death();
+    //     }
+    // }   
         
     return;
 }
@@ -216,20 +218,20 @@ public:
     void (Ghost::*ai_vulnerable)(); //ai for when ghost become vulnerable
     bool update();
     void process_tile_h();
-    
     void flee_ai();
     void wanderer_ai();
     void chaser_ai();
     void drifter_ai();
     enum ghost_ai {wanderer,chaser,drifter,flee};
-    
-    //num turns befor ghost may leave spawn
-    short leave_delay;
 
     Ghost(ghost_ai ai, ghost_ai ai_vulnerable, Map *m, Entity *target, const short &spawn_x,const short &spawn_y, const short & leave_delay);
     Ghost();
 private:
-    int fsp();
+    //num turns befor ghost may leave spawn
+    short leave_delay;
+
+    short vulnerable;
+    const short VULNERABLE_SET = 20;
 };
 
 Ghost::Ghost(ghost_ai ai, ghost_ai ai_vulnerable, Map *m, Entity *target, const short &spawn_x, const short &spawn_y, const short &leave_delay) {
@@ -266,27 +268,32 @@ Ghost::Ghost(ghost_ai ai, ghost_ai ai_vulnerable, Map *m, Entity *target, const 
 
 bool Ghost::update() {
     bool update = false;
+    if(m->vulnerable) vulnerable = VULNERABLE_SET;
+
+    //dir of -1 will be treated and as the same lenght of time until movement as moving up and down
     if((m->frame_counter % move_delay == 0 && dir < 2) || (m->frame_counter % (move_delay/2) == 0 && dir > 1)) {
-        if(!(leave_delay)){
-            //if turning is possible, no need to process anything if the ghost can't respond
-            if(m->is_vulnerable() || (dir/2 ? 0 : 2) || movable(dir/2 ? 1 : 3) ) { 
-                if(m->is_vulnerable()) (this->*ai_vulnerable)();
-                else (this->*ai)(); 
-            }
+        if(leave_delay) leave_delay--;
+        else {
+            if( vulnerable ) { 
+                (this->*ai_vulnerable)();
+                if(!(--vulnerable)) (this->*ai_vulnerable)();
+            } // if can turn then see what next dir should be
+            else if( movable(dir/2 ? 0 : 2) || movable(dir/2 ? 1 : 3) ) { (this->*ai)(); }
             if(dir >= 0) {
                 if(m->m[y_pos][x_pos] != m->GHOST) temp_underneath = m->m[y_pos][x_pos];
                 move_h();
                 update = true;
             }
-        } else leave_delay--;
+        }
     }
     return update;
 }
 
 void Ghost::process_tile_h() {
     if( temp_underneath == m->PAC_FULL || temp_underneath == m->PAC_UP || temp_underneath == m->PAC_DOWN || temp_underneath == m->PAC_LEFT || temp_underneath == m->PAC_RIGHT ) {
-        if(m->is_vulnerable()) { //should check on the off chance a ghost is suicidal
-            //ghost eaten 
+        if( vulnerable ) { //should check on the off chance a ghost is suicidal
+            m->m[y_pos][x_pos] = temp_underneath; //puts player back on top
+            reset();
         } else { //ghost ate player
             m->player_death();
         }

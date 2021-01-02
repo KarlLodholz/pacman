@@ -118,9 +118,9 @@ void Game::iterate() {
         time_inc = 0;
         m->frame_counter++;
         for(int i = 0; i < entities.size(); i++) {
-            if(m->is_vulnerable()) m->dec_vulnerable();
             if(entities[i]->update()) update = true;
         }
+        m->vulnerable = false;
         if(m->is_game_over()) playing = false;
         else if(m->reset()) {
             for(int i = 0; i < entities.size(); i++) {entities[i]->reset();}
