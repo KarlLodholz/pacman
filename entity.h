@@ -49,7 +49,7 @@ protected:
 //dir must only be 0-3
 bool Entity::movable(const int &d) {
     bool movable = false;
-    if(!(d<0)) {
+    if(d>=0) {
         short tmp_y_pos = (y_pos+((d/2-1)*-1)*(d*2-1));
         short tmp_x_pos = (x_pos+(d/2)*((d%2)*2-1));
         tmp_y_pos = tmp_y_pos < 0 ? m->height-1 : tmp_y_pos == m->height ? 0 : tmp_y_pos;
@@ -252,6 +252,7 @@ Ghost::Ghost(ghost_ai ai, ghost_ai ai_vulnerable, Map *m, Entity *target, const 
         case flee:
             this->ai_vulnerable = &Ghost::flee_ai;
             break;
+        
     }
     this->dir = 0;
     this->m = m;
@@ -264,6 +265,7 @@ Ghost::Ghost(ghost_ai ai, ghost_ai ai_vulnerable, Map *m, Entity *target, const 
     this->move_delay = 8; 
     sprite_idx = 0;
     sprites.push_back(m->GHOST);
+    sprites.push_back(m->VULN_GHOST);
     walls.push_back(m->WE_WALL);
     walls.push_back(m->NS_WALL);
     walls.push_back(m->SE_WALL);
@@ -275,19 +277,25 @@ Ghost::Ghost(ghost_ai ai, ghost_ai ai_vulnerable, Map *m, Entity *target, const 
 
 bool Ghost::update() {
     bool update = false;
-    if(m->vulnerable) vulnerable = VULNERABLE_SET;
-
+    if(m->vulnerable) {
+        vulnerable = VULNERABLE_SET;
+        dir = dir+((dir%2)*-2)+1; //flip dir
+        sprite_idx = 1;
+    }   
     //dir of -1 will be treated and as the same lenght of time until movement as moving up and down
     if((m->frame_counter % move_delay == 0 && dir < 2) || (m->frame_counter % (move_delay/2) == 0 && dir > 1)) {
         if(leave_delay) leave_delay--;
         else {
             if( vulnerable ) { 
                 (this->*ai_vulnerable)();
-                if(!(--vulnerable)) (this->*ai_vulnerable)();
+                if(!(--vulnerable)) {
+                    sprite_idx = 0;
+                    (this->*ai_vulnerable)();
+                }
             } // if can turn then see what next dir should be
             else if( movable(dir/2 ? 0 : 2) || movable(dir/2 ? 1 : 3) ) { (this->*ai)(); }
             if(dir >= 0) {
-                if(m->m[y_pos][x_pos] != m->GHOST)
+                if(m->m[y_pos][x_pos] != m->GHOST && m->m[y_pos][x_pos] != m->VULN_GHOST)
                     if(m->m[y_pos][x_pos] == m->PAC_FULL || m->m[y_pos][x_pos] == m->PAC_UP || m->m[y_pos][x_pos] == m->PAC_DOWN || m->m[y_pos][x_pos] == m->PAC_LEFT || m->m[y_pos][x_pos] == m->PAC_RIGHT ) 
                         m->player_death();
                     else temp_underneath = m->m[y_pos][x_pos];
@@ -311,13 +319,14 @@ void Ghost::process_tile_h() {
     return;
 }
 
+//randomlu wanders around
 void Ghost::wanderer_ai() {
     std::vector<int> d;
     if(movable(dir)) d.push_back(dir);
     if(movable(dir/2?0:2)) d.push_back(dir/2?0:2);
     if(movable(dir/2?1:3)) d.push_back(dir/2?1:3);
-    dir = d[rand()%(d.size())];
-    //dir = (d.size() == 0 ? d[rand()%(d.size())] : dir + (((dir%2)*(-2))+1));
+    //dir = d[rand()%(d.size())];
+    dir = (d.size() > 0 ? d[rand()%(d.size())] : dir + (((dir%2)*(-2))+1));
     if(!movable(dir)) dir = -1;
     return;
 }
@@ -333,7 +342,13 @@ void Ghost::drifter_ai() {
 }
 
 void Ghost::flee_ai() {
-    dir = -1;
+    std::vector<int> d;
+    if(movable(dir)) d.push_back(dir);
+    if(movable(dir/2?0:2)) d.push_back(dir/2?0:2);
+    if(movable(dir/2?1:3)) d.push_back(dir/2?1:3);
+    //dir = d[rand()%(d.size())];
+    dir = (d.size() > 0 ? d[rand()%(d.size())] : dir + (((dir%2)*(-2))+1));
+    if(!movable(dir)) dir = -1;
     return;
 }
 

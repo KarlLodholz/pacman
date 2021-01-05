@@ -33,7 +33,8 @@ public:
     const short PAC_WALL  = '-';
     const short DOT       = 8226;//'•';
     const short BIG_DOT   = 'o';
-    const short GHOST     = 1044;//'Д';
+    const short GHOST     = 1044;//'Д';'
+    const short VULN_GHOST= 'A';
     const short PAC_FULL  = 4160;//'၀';
     const short PAC_UP    = 4117;//'ပ';
     const short PAC_DOWN  = 4098;//'ဂ';
