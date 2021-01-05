@@ -32,6 +32,7 @@ protected:
     //entity spawn location
     short spawn_x;
     short spawn_y;
+    short spawn_dir;
     //value for character underneath the entity
     short temp_underneath;
     //returns if entity can move in that direction
@@ -94,9 +95,12 @@ void Entity::move_h() {
 
 
 void Entity::reset() {
+    if (temp_underneath != m->SPACE && temp_underneath != m->BIG_DOT && temp_underneath != m->DOT) 
+        temp_underneath = m->SPACE;
+    m->m[y_pos][x_pos] = temp_underneath;
     x_pos = spawn_x;
     y_pos = spawn_y;
-    dir = 2;
+    dir = spawn_dir;
     temp_underneath = ' ';
     return;
 }
@@ -123,6 +127,7 @@ Player::Player(Map *m, const short &spawn_x, const short &spawn_y) {
     this->m = m;
     this->x_pos = this->spawn_x = spawn_x;
     this->y_pos = this->spawn_y = spawn_y;
+    spawn_dir = 2;
     sprite_idx = 0;
     sprites.push_back(m->PAC_FULL);
     sprites.push_back(m->PAC_UP);
@@ -252,6 +257,8 @@ Ghost::Ghost(ghost_ai ai, ghost_ai ai_vulnerable, Map *m, Entity *target, const 
     this->m = m;
     this->x_pos = this->spawn_x = spawn_x;
     this->y_pos = this->spawn_y = spawn_y;
+    spawn_dir = 0;
+
     this->leave_delay = ((leave_delay*2)+5);
     this->temp_underneath = ' ';
     this->move_delay = 8; 
@@ -280,7 +287,10 @@ bool Ghost::update() {
             } // if can turn then see what next dir should be
             else if( movable(dir/2 ? 0 : 2) || movable(dir/2 ? 1 : 3) ) { (this->*ai)(); }
             if(dir >= 0) {
-                if(m->m[y_pos][x_pos] != m->GHOST) temp_underneath = m->m[y_pos][x_pos];
+                if(m->m[y_pos][x_pos] != m->GHOST)
+                    if(m->m[y_pos][x_pos] == m->PAC_FULL || m->m[y_pos][x_pos] == m->PAC_UP || m->m[y_pos][x_pos] == m->PAC_DOWN || m->m[y_pos][x_pos] == m->PAC_LEFT || m->m[y_pos][x_pos] == m->PAC_RIGHT ) 
+                        m->player_death();
+                    else temp_underneath = m->m[y_pos][x_pos];
                 move_h();
                 update = true;
             }

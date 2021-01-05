@@ -193,8 +193,8 @@ void Map::inc_score(const long &obj) {
 ///////////////////////////////////////////////////////////////////////////////
 //used when player is killed by a ghost
 void Map::player_death() {
-    if( --lives >= 0 ) {  //dec player's lives
-        reset_lvl();
+    if( lives-- > 0 ) {  //dec player's lives
+        reset_flg = true;
     } else {  //player has lost last life
         game_over = true;
     }
@@ -204,12 +204,6 @@ void Map::player_death() {
 //used when player collects all of the dots in the lvl
 void Map::complete_lvl() {
     lvl++;
-    reset_lvl();
-}
-
-///////////////////////////////////////////////////////////////////////////////
-//helper func for resetting a lvl
-void Map::reset_lvl() {
     reset_flg = true;
     dots = dots_cpy;
     m = m_cpy;
